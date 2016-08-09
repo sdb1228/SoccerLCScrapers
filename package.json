@@ -1,0 +1,17 @@
+{
+  "name": "jsscrapers",
+  "version": "1.0.0",
+  "description": "Scrapers for all the local soccer facilities",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node Entry.js"
+  },
+  "author": "Steven Burnett",
+  "license": "ISC",
+  "devDependencies": {},
+  "dependencies": {
+    "axios": "^0.13.1",
+    "node-jsdom": "^3.1.5",
+    "pg": "^6.0.3"
+  }
+}
