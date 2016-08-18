@@ -26,17 +26,35 @@ var insertOrUpdateTeam = function insertTeam (teamId, teamName, division = '') {
     if(err) {
       return console.error('error fetching client from pool', err);
     }
-    client.query('INSERT INTO teams (team_id, name, division) VALUES ($1, $2, $3);', [teamId, teamName, division], function(err, result) {
+
+    let id = null;
+    client.query('SELECT id FROM teams WHERE team_id=$1;', [teamId], function(err, result) {
       done();
 
       if(err) {
         return console.error('error running query', err);
       }
-      else{
-        return console.log('Inserted team ' + teamName)
-      }
+
+      console.log(result.rows[0].id);
     });
+  })
+}
+
+function inserTeam (client, teamId, teamName, division) {
+  client.query('INSERT INTO teams (team_id, name, division) VALUES ($1, $2, $3);', [teamId, teamName, division], function(err, result) {
+    done();
+
+    if(err) {
+      return console.error('error running query', err);
+    }
+    else{
+      return console.log('Inserted team ' + teamName)
+    }
   });
+}
+
+function updateTeam (client, teamId, teamName, division) {
+
 }
 
 module.exports.insertOrUpdateTeam = insertOrUpdateTeam

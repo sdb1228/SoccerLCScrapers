@@ -3,8 +3,8 @@ const Database = require('./Database')
 const axios = require('axios')
 
 var main = function main () {
-  //getTeams()
-  getGames()
+  getTeams()
+  //getGames()
 }
 
 function getTeams () {
@@ -21,7 +21,8 @@ function getTeams () {
 
 function parseTeams ($, teams) {
   for (var i = 0; i < teams.length; i++) {
-    Database.insertOrUpdateTeam(teams[i].value, teams[i].text)
+    console.log(teams[i].value)
+    //Database.insertOrUpdateTeam(teams[i].value, teams[i].text)
   }
 }
 

@@ -1,0 +1,17 @@
+version: '2'
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: SoccerLC
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: SoccerLC
+      VIRTUAL_HOST: postgres.docker
+
+  scrapers:
+    build: .
+    command: npm start
+    environment:
+      VIRTUAL_HOST: scrapers.docker
+    links:
+      - postgres
