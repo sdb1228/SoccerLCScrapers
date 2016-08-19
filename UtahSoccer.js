@@ -1,27 +1,43 @@
 const jsdom = require('node-jsdom')
 const Database = require('./Database')
 const axios = require('axios')
+const helpers = require('./Helpers')
+const Table = require('cli-table')
+const log = require('custom-logger').config({ level: 0 })
 
 var main = function main () {
+  helpers.headerBreak('Parsing Teams Utah Soccer')
   getTeams()
   //getGames()
 }
 
 function getTeams () {
+  helpers.minorHeader('Making endpoint call to https://utahsoccer.org/public_get_my_team.php')
   jsdom.env(
     'https://utahsoccer.org/public_get_my_team.php',
     ['http://code.jquery.com/jquery.js'],
     function (errors, window) {
+      if (errors) {
+        helpers.minorErrorHeader('ERROR IN MAKING AJAX CALL IN GET TEAMS')
+        //TODO make call to slack channel
+        log.error(errors)
+        helpers.minorErrorHeader('RETURNING')
+        return
+      }
       var $ = window.$
-      const teams =  $('option')
-      parseTeams($, teams)
+      if ($('option')) {
+        const teams =  $('option')
+        log.info( teams.length + " Teams returned from utahsoccer")
+        parseTeams($, teams)
+      } else {
+        helpers.minorErrorHeader('NO TEAMS RETURNED FROM CALL RETURNING')
+      }
     }
   );
 }
 
 function parseTeams ($, teams) {
   for (var i = 0; i < teams.length; i++) {
-    console.log(teams[i].value)
     //Database.insertOrUpdateTeam(teams[i].value, teams[i].text)
   }
 }
