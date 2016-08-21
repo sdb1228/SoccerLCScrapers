@@ -1,32 +1,17 @@
-var pg = require('pg');
+const pg = require('pg');
+const client = new pg.Client();
 
-// instantiate a new client
-// the client will read connection information from
-// the same environment variables used by postgres cli tools
-var client = new pg.Client();
-
-// connect to our database
 client.connect(function (err) {
   if (err) throw err;
 
-  // execute a query on our database
-  client.query('SELECT $1::text as name', ['brianc'], function (err, result) {
+
+  client.query('CREATE TABLE IF NOT EXISTS teams ( name text, id serial NOT NULL, team_id text, division text, CONSTRAINT teams_pkey PRIMARY KEY (id)) WITH ( OIDS=FALSE);', function (err, result) {
     if (err) throw err;
-
-    // just print the result to the console
-    console.log(result.rows[0]); // outputs: { name: 'brianc' }
-
-    // disconnect the client
     client.end(function (err) {
       if (err) throw err;
     });
   });
 });
-//import psycopg2, os
-
-//host = os.environ.get('POSTGRES_PORT_5432_TCP_ADDR')
-//connection = psycopg2.connect(host='postgres',database='Soccer_Games',user='dburnett',password='doug1')
-//cursor = connection.cursor()
 
 //facility = """CREATE TABLE IF NOT EXISTS facility(name TEXT, address TEXT, city TEXT, state TEXT, zip INT, id SERIAL, PRIMARY KEY(id));"""
 //favorites = """CREATE TABLE IF NOT EXISTS favorites(installationid TEXT, id BIGSERIAL, teamid TEXT, PRIMARY KEY(id));"""

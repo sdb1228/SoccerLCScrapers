@@ -14,7 +14,7 @@
     "cli-table": "^0.3.1",
     "custom-logger": "^0.3.1",
     "node-jsdom": "^3.1.5",
-    "pg": "^6.0.3",
-    "slackbots": "^0.5.2"
+    "node-slack": "0.0.7",
+    "pg": "^6.0.3"
   }
 }

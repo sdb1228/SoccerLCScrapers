@@ -8,7 +8,7 @@ const log = require('custom-logger').config({ level: 0 })
 var main = function main () {
   helpers.headerBreak('Parsing Teams Utah Soccer')
   getTeams()
-  helpers.slackSuccess("woop made it")
+  helpers.slackSuccess("WHAT UP")
   //getGames()
 }
 
