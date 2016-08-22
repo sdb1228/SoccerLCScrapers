@@ -8,7 +8,8 @@ const log = require('custom-logger').config({ level: 0 })
 var main = function main () {
   helpers.headerBreak('Parsing Teams Utah Soccer')
   getTeams()
-  helpers.slackSuccess("WHAT UP")
+  helpers.slackSuccess('Utah Soccer teams were updated successfully')
+  helpers.headerBreak('Utah Soccer teams were updated successfully')
   //getGames()
 }
 
@@ -20,15 +21,14 @@ function getTeams () {
     function (errors, window) {
       if (errors) {
         helpers.minorErrorHeader('ERROR IN MAKING AJAX CALL IN GET TEAMS')
-        //TODO make call to slack channel
+        helpers.slackFailure('Error making ajax request to https://utahsoccer.org/public_get_my_team.php in Utah Soccer')
         log.error(errors)
-        helpers.minorErrorHeader('RETURNING')
         return
       }
       var $ = window.$
       if ($('option')) {
         const teams =  $('option')
-        log.info( teams.length + " Teams returned from utahsoccer")
+        log.info( teams.length + ' Teams returned from utahsoccer')
         parseTeams($, teams)
       } else {
         helpers.minorErrorHeader('NO TEAMS RETURNED FROM CALL RETURNING')
@@ -38,8 +38,13 @@ function getTeams () {
 }
 
 function parseTeams ($, teams) {
+  helpers.minorHeader('Parsing Utah Soccer teams')
   for (var i = 0; i < teams.length; i++) {
-    //Database.insertOrUpdateTeam(teams[i].value, teams[i].text)
+    if (!teams[i].value || !teams[i].text) {
+      helpers.slackFailure('Error in printing out team record ID: ' + teams[i].value + ' Name: ' + teams[i].text)
+      continue
+    }
+    Database.insertOrUpdateTeam(teams[i].value, teams[i].text)
   }
 }
 

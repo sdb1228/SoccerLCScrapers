@@ -1,9 +1,11 @@
 const pg = require('pg')
+const helpers = require('./Helpers')
+const log = require('custom-logger').config({ level: 0 })
 
 const config = {
   user: 'SoccerLC',
   database: 'SoccerLC',
-  password: 'R1ghtd28@88!',
+  password: 'password',
   port: 5432,
   max: 10,
   idleTimeoutMillis: 3000,
@@ -22,39 +24,56 @@ pool.on('error', function (err, client) {
 })
 
 var insertOrUpdateTeam = function insertTeam (teamId, teamName, division = '') {
+  let id = null;
   pool.connect(function(err, client, done) {
     if(err) {
-      return console.error('error fetching client from pool', err);
+      return helpers.slackFailure('Error fetching client from pool ' + err)
     }
-
-    let id = null;
+    log.info('***** Team Record Recieved *****')
+    helpers.printTeamRow(teamId, teamName, division)
     client.query('SELECT id FROM teams WHERE team_id=$1;', [teamId], function(err, result) {
-      done();
-
+    done();
       if(err) {
-        return console.error('error running query', err);
+        helpers.minorErrorHeader('Error running select query on teams')
+        return helpers.slackFailure('Error running select team query ' + err)
       }
-
-      console.log(result.rows[0].id);
-    });
+      if (result.rows.length) {
+        log.info('Row found ID: ' + result.rows[0].id)
+        id = result.rows.id
+      } else {
+        insertTeam(teamId, teamName, division)
+        log.info('No row found inserting team')
+      }
+    })
   })
+  //if (id) {
+    //updateTeam(teamId, teamName, division, id)
+  //} else {
+    //insertTeam(teamId, teamName, division)
+  //}
 }
 
-function inserTeam (client, teamId, teamName, division) {
-  client.query('INSERT INTO teams (team_id, name, division) VALUES ($1, $2, $3);', [teamId, teamName, division], function(err, result) {
-    done();
-
+function insertTeam (teamId, teamName, division) {
+  console.log("here")
+  pool.connect(function(err, client, done) {
     if(err) {
-      return console.error('error running query', err);
+      return helpers.slackFailure('Error fetching client from pool ' + err)
     }
-    else{
-      return console.log('Inserted team ' + teamName)
-    }
+    client.query('INSERT INTO teams (team_id, name, division) VALUES ($1, $2, $3);', [teamId, teamName, division], function(err, result) {
+    done();
+      if(err) {
+        helpers.minorErrorHeader('Error inserting team record into database')
+        return helpers.slackFailure('Error running insert teams query ' + err)
+      }
+      else{
+        return log.info('Inserted team ' + teamName)
+      }
+    });
   });
 }
 
-function updateTeam (client, teamId, teamName, division) {
+function updateTeam (teamId, teamName, division, rowID) {
 
 }
 
-module.exports.insertOrUpdateTeam = insertOrUpdateTeam
+module.exports = {insertOrUpdateTeam}

@@ -1,6 +1,9 @@
 const log = require('custom-logger').config({ level: 0 })
 const Slack = require('node-slack');
 const slack = new Slack("https://hooks.slack.com/services/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");
+const Table = require('cli-table');
+
+
 
 const headerBreak = function headerBreak (text) {
   console.log("\n")
@@ -38,6 +41,19 @@ const slackFailure = function slackFailure (text) {
       username: 'Scraper Bot'
   });
 }
+
+const printTeamRow = function printTeamRow (teamId, teamName, division = '') {
+  var teamsTable= new Table({
+    chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
+  });
+  teamsTable.push(
+      ['Team Id', 'Team Name', 'Division'],
+      [teamId, teamName, division]
+  )
+  console.log(teamsTable.toString());
+}
+module.exports.printTeamRow = printTeamRow
+module.exports.slackFailure = slackFailure
 module.exports.slackSuccess = slackSuccess
 module.exports.minorErrorHeader = minorErrorHeader
 module.exports.minorHeader = minorHeader
