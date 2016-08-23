@@ -1,0 +1,30 @@
+{
+  "parser": "babel-eslint",
+  "extends": [ "standard"],
+  "env": {
+    "mocha": true,
+    "node": true,
+    "browser": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {
+    "generator-star-spacing": 0,
+
+    "comma-dangle": [2, "always-multiline"],
+    jsx-quotes: ["error", "prefer-single"],
+    "no-var": [2],
+
+    "no-warning-comments": 1,
+
+    "no-alert": [1],
+    "no-debugger": [1]
+  },
+  "globals": {
+    "alert": false
+  }
+}

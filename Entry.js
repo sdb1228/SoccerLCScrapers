@@ -1,6 +1,6 @@
-const UtahSoccer =  require('./UtahSoccer')
+const UtahSoccer = require('./UtahSoccer')
 const log = require('custom-logger').config({ level: 0 })
-prettyPrint("Utah Soccer")
+prettyPrint('Utah Soccer')
 UtahSoccer()
 
 function prettyPrint (facility) {

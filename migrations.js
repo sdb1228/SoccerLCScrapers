@@ -1,17 +1,16 @@
-const pg = require('pg');
-const client = new pg.Client();
+const pg = require('pg')
+const client = new pg.Client()
 
 client.connect(function (err) {
-  if (err) throw err;
-
+  if (err) throw err
 
   client.query('CREATE TABLE IF NOT EXISTS teams ( name text, id serial NOT NULL, team_id text, division text, CONSTRAINT teams_pkey PRIMARY KEY (id)) WITH ( OIDS=FALSE);', function (err, result) {
-    if (err) throw err;
+    if (err) throw err
     client.end(function (err) {
-      if (err) throw err;
-    });
-  });
-});
+      if (err) throw err
+    })
+  })
+})
 
 //facility = """CREATE TABLE IF NOT EXISTS facility(name TEXT, address TEXT, city TEXT, state TEXT, zip INT, id SERIAL, PRIMARY KEY(id));"""
 //favorites = """CREATE TABLE IF NOT EXISTS favorites(installationid TEXT, id BIGSERIAL, teamid TEXT, PRIMARY KEY(id));"""
