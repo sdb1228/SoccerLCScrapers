@@ -50,10 +50,13 @@ const printTeamRow = function printTeamRow (teamId, teamName, division = '') {
   )
   console.log(teamsTable.toString())
 }
-module.exports.printTeamRow = printTeamRow
-module.exports.slackFailure = slackFailure
-module.exports.slackSuccess = slackSuccess
-module.exports.minorErrorHeader = minorErrorHeader
-module.exports.minorHeader = minorHeader
-module.exports.headerBreak = headerBreak
-module.exports.lineBreaks = lineBreaks
+
+module.exports = {
+  printTeamRow,
+  slackFailure,
+  slackSuccess,
+  minorErrorHeader,
+  minorHeader,
+  headerBreak,
+  lineBreaks,
+}

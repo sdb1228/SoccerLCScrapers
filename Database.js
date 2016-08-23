@@ -28,9 +28,9 @@ const insertOrUpdateTeam = function insertOrUpdateTeam (teamId, teamName, divisi
     if (err) {
       return helpers.slackFailure('Error fetching client from pool ' + err)
     }
-    log.info('***** Team Record Recieved *****')
-    helpers.printTeamRow(teamId, teamName, division)
     client.query('SELECT id FROM teams WHERE team_id=$1;', [teamId], function (err, result) {
+      log.info('***** Team Record Recieved *****')
+      helpers.printTeamRow(teamId, teamName, division)
       if (err) {
         helpers.minorErrorHeader('Error running select query on teams')
         return helpers.slackFailure('Error running select team query ' + err)
@@ -50,7 +50,7 @@ function insertTeam (client, done, teamId, teamName, division) {
   client.query('INSERT INTO teams (team_id, name, division) VALUES ($1, $2, $3);', [teamId, teamName, division], function (err, result) {
     done()
     if (err) {
-      helpers.minorErrorHeader('Error inserting team record into database')
+      helpers.minorErrorHeader('Error inserting team record into database ' + teamId + ' ' + teamName + ' ' + division)
       return helpers.slackFailure('Error running insert teams query ' + err)
     } else {
       return log.info('Inserted team ' + teamName)
