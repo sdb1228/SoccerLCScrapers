@@ -37,13 +37,37 @@ const insertOrUpdateTeam = function insertOrUpdateTeam (teamId, teamName, divisi
       }
       if (result.rows.length) {
         log.info('Row found ID: ' + result.rows[0].id)
-        done()
+        updateTeam(client, done, teamId, teamName, division, result.rows[0].id)
       } else {
-        insertTeam(client, done, teamId, teamName, division)
         log.info('No row found inserting team')
+        insertTeam(client, done, teamId, teamName, division)
       }
     })
   })
+}
+
+const insertOrUpdateGame = function insertOrUpdateGame (gameId, division, field, dateTime, homeTeam, awayTeam, homeTeamScore, awayTeamScore) {
+  // TODO: WE NEED to insert the game and do fancy stuff
+   //pool.connect(function (err, client, done) {
+     //if (err) {
+       //return helpers.slackFailure('Error fetching client from pool ' + err)
+     //}
+     //client.query('SELECT id FROM teams WHERE team_id=$1;', [teamId], function (err, result) {
+       //log.info('***** Team Record Recieved *****')
+       //helpers.printTeamRow(teamId, teamName, division)
+       //if (err) {
+         //helpers.minorErrorHeader('Error running select query on teams')
+         //return helpers.slackFailure('Error running select team query ' + err)
+       //}
+       //if (result.rows.length) {
+         //log.info('Row found ID: ' + result.rows[0].id)
+         //updateTeam(client, done, teamId, teamName, division, result.rows[0].id)
+       //} else {
+         //log.info('No row found inserting team')
+         //insertTeam(client, done, teamId, teamName, division)
+       //}
+     //})
+   //})
 }
 
 function insertTeam (client, done, teamId, teamName, division) {
@@ -58,8 +82,19 @@ function insertTeam (client, done, teamId, teamName, division) {
   })
 }
 
-function updateTeam (teamId, teamName, division, rowID) {
-  console.log('update me')
+function updateTeam (client, done, teamId, teamName, division, rowID) {
+  client.query('UPDATE teams SET name=$1, team_id=$2, division=$3 WHERE id=$4;', [teamName, teamId, division, rowID], function (err, result) {
+    done()
+    if (err) {
+      helpers.minorErrorHeader('Error updating team record into database ' + teamId + ' ' + teamName + ' ' + division)
+      return helpers.slackFailure('Error running update teams query ' + err)
+    } else {
+      return log.info('Updated team ' + teamName)
+    }
+  })
 }
 
-module.exports = {insertOrUpdateTeam}
+module.exports = {
+  insertOrUpdateTeam,
+  insertOrUpdateGame,
+}
