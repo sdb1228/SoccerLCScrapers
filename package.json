@@ -20,6 +20,8 @@
     "eslint-plugin-standard": "^2.0.0",
     "node-jsdom": "^3.1.5",
     "node-slack": "0.0.7",
-    "pg": "^6.0.3"
+    "pg": "^6.0.3",
+    "sequelize": "^3.24.2",
+    "sequelize-cli": "^2.4.0"
   }
 }
