@@ -5,23 +5,26 @@ Soccer LC Scrapers contains all the scrapers for the facilities supported curren
 ## Getting Started
 To run the scrapers the most common way is to use [Docker] [df1]
 
-If you are running this on a mac and never set up docker before, you will need [Dinghy] [dghy].  Follow the set up guides there and you should be almost ready to go! 
+If you are running this on a mac and never set up docker before, you will need [Dinghy] [dghy].  Follow the set up guides there and you should be almost ready to go!
 
 After having docker installed we use docker-compose version 1.7.1 to build/run the scrapers.  You will first need to run:
 ```
 docker-compose build
 ```
 From there you will need to migrate your docker database so you can have all the tables.
-``` 
-docker-compose run --rm scrapers node migrations.js
 ```
+docker-compose run --rm scrapers node_modules/.bin/sequelize db:migrate
+```
+Sometimes this will fail the first time because the database container isn't running.  You have 2 options 1 run the database container
+before you run the migrations, or just run that command above twice and it will work.
+
 After that you are ready to run the scrapers
 ```
 docker-compose run --rm scrapers
-or 
+or
 docker-compose run scrapers
 ```
-You can then check out the database and its contents by doing 
+You can then check out the database and its contents by doing
 ```
 docker exec -it <postgres containerid> bash
 ```
@@ -29,11 +32,11 @@ you can find the container id by doing
 ```
 docker ps
 ```
-once in the container you will need to run 
+once in the container you will need to run
 ```
 psql -U SoccerLC
 ```
-you can then list all the tables by doing 
+you can then list all the tables by doing
 ```
 \dt
 ```

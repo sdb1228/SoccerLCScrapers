@@ -2,9 +2,9 @@
 module.exports = function(sequelize, DataTypes) {
   var Teams = sequelize.define('Teams', {
     name: DataTypes.STRING,
-    teamid: DataTypes.STRING,
+    teamId: DataTypes.STRING,
     division: DataTypes.STRING,
-    deleted_at: DataTypes.DATE
+    deletedAt: DataTypes.DATE
   }, {
     classMethods: {
       associate: function(models) {

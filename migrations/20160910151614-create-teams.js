@@ -11,13 +11,14 @@ module.exports = {
       name: {
         type: Sequelize.STRING
       },
-      teamid: {
-        type: Sequelize.STRING
+      teamId: {
+        type: Sequelize.STRING,
+        unique: true
       },
       division: {
         type: Sequelize.STRING
       },
-      deleted_at: {
+      deletedAt: {
         type: Sequelize.DATE
       },
       createdAt: {
