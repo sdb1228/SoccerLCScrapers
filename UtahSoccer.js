@@ -5,12 +5,12 @@ const helpers = require('./Helpers')
 const log = require('custom-logger').config({ level: 0 })
 
 const main = function main () {
-  //helpers.headerBreak('Parsing Teams Utah Soccer')
+  helpers.headerBreak('Parsing Teams Utah Soccer')
   getTeams()
-  //helpers.slackSuccess('Utah Soccer teams were updated successfully')
-  //helpers.headerBreak('Utah Soccer teams were updated successfully')
-  //helpers.headerBreak('Parsing Games Unplayed Utah Soccer')
-  //getGames()
+  helpers.slackSuccess('Utah Soccer teams were updated successfully')
+  helpers.headerBreak('Utah Soccer teams were updated successfully')
+  helpers.headerBreak('Parsing Games Unplayed Utah Soccer')
+  getGames()
 }
 
 function getTeams () {
@@ -69,10 +69,11 @@ function getGames () {
 function parseGames (games) {
   helpers.minorHeader('Parsing Utah Soccer games')
   for (let i = 0; i < games.length; i++) {
+  // TODO: insert both teams first before inserting game
     if (games[i].game_type !== 'tournament' || games[i].game_type !== 'final') {
+      games[i].league_abbreviation + ' ' + games[i].division_abrev,
       Database.insertOrUpdateGame(
           games[i].game_id,
-          games[i].league_abbreviation + ' ' + games[i].division_abrev,
           games[i].field_name,
           new Date(games[i].day_of_week + ' ' + games[i].game_date + ' ' + games[i].time_ampm),
           games[i].home_team_id,
