@@ -6,11 +6,11 @@ const log = require('custom-logger').config({ level: 0 })
 
 const main = function main () {
   //helpers.headerBreak('Parsing Teams Utah Soccer')
-  //getTeams()
+  getTeams()
   //helpers.slackSuccess('Utah Soccer teams were updated successfully')
   //helpers.headerBreak('Utah Soccer teams were updated successfully')
   //helpers.headerBreak('Parsing Games Unplayed Utah Soccer')
-  getGames()
+  //getGames()
 }
 
 function getTeams () {
@@ -44,7 +44,7 @@ function parseTeams ($, teams) {
       helpers.slackFailure('Error in printing out team record ID: ' + teams[i].value + ' Name: ' + teams[i].text)
       continue
     }
-    Database.insertOrUpdateTeam(teams[i].value, teams[i].text)
+    Database.insertOrUpdateTeam(teams[i].value, teams[i].text, '', 1)
   }
 }
 

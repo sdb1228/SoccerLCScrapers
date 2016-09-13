@@ -16,6 +16,16 @@ module.exports = {
           key: 'teamId'
         }
       },
+      facility: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Facilitys',
+          key: 'id'
+        }
+      },
+      facilityGameId: {
+        type: Sequelize.STRING,
+      },
       homeTeam: {
         type: Sequelize.STRING,
         unique: "gameCombo",
