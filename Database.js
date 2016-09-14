@@ -27,45 +27,45 @@ const insertOrUpdateTeam = function insertOrUpdateTeam (teamId, teamName, divisi
   })
 }
 
-const insertOrUpdateGame = function insertOrUpdateGame (gameId, field, dateTime, homeTeam, awayTeam, homeTeamScore, awayTeamScore) {
-  fieldId = null
+const insertOrUpdateGame = function insertOrUpdateGame (gameId, field, dateTime, homeTeam, awayTeam, homeTeamScore, awayTeamScore, facility) {
   Fields
     .findOrCreate({where: {name: field}})
-    .spread(function(field, created) {
-      fieldId = field.id
+    .then(function(field, created) {
+      if (!field[0].id) {
+        helpers.minorErrorHeader('Missing fieldId in game record')
+        helpers.printGameRow(gameId, field, dateTime, homeTeam, awayTeam, homeTeamScore, awayTeamScore)
+        return helpers.slackFailure('Missing fieldId for game')
+      }
+      //if (gameId) {
+        ////TODO: find/upsert by game id
+      //} else {
+        Games.upsert({
+          awayTeam: awayTeam,
+          homeTeam: homeTeam,
+          gameDateTime: dateTime,
+          field: field[0].id,
+          homeTeamScore: homeTeamScore,
+          awayTeamScore: awayTeamScore,
+          facility: facility
+        })
+        .then(function(inserted) {
+          if (inserted) {
+            log.info('***** Inserted Game row *****')
+          } else {
+            log.info('***** Updated Game row *****')
+          }
+          helpers.printGameRow(gameId, field[0].id, dateTime, homeTeam, awayTeam, homeTeamScore, awayTeamScore)
+        })
+        .catch(function(err) {
+          helpers.minorErrorHeader('Error running update or insert on game ' + err)
+          return helpers.slackFailure('Error running update or insert on game ' + err)
+        })
+      //}
     })
     .catch(function(err) {
       helpers.minorErrorHeader('Error running find or create on field ' + err)
       return helpers.slackFailure('Error running find or create on field ' + err)
     })
-  if (!fieldId) {
-    helpers.minorErrorHeader('Missing fieldId in game record')
-    //TODO: pring game row
-    return helpers.slackFailure('Missing fieldId for game')
-  }
-  if (gameId) {
-    //TODO: find/upsert by game id
-  } else {
-    Games.upsert({
-      awayTeam: awayTeam,
-      homeTeam: homeTeam,
-      homeTeamScore: homeTeamScore,
-      awayTeamScore: awayTeamScore,
-    })
-    .then(function(inserted) {
-      if (inserted) {
-        log.info('***** Inserted Game row *****')
-      } else {
-        log.info('***** Updated Game row *****')
-      }
-      // TODO: insert print game row
-      //helpers.printTeamRow(teamId, teamName, division)
-    })
-    .catch(function(err) {
-      helpers.minorErrorHeader('Error running update or insert on game ' + err)
-      return helpers.slackFailure('Error running update or insert on game ' + err)
-    })
-  }
 }
 
 const initialFacilityInsert = function initialFacilityInsert (facilities) {

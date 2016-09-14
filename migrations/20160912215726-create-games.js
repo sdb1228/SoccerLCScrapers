@@ -10,7 +10,7 @@ module.exports = {
       },
       awayTeam: {
         type: Sequelize.STRING,
-        unique: "gameCombo",
+        unique: 'gameCombo',
         references: {
           model: 'Teams',
           key: 'teamId'
@@ -28,7 +28,7 @@ module.exports = {
       },
       homeTeam: {
         type: Sequelize.STRING,
-        unique: "gameCombo",
+        unique: 'gameCombo',
         references: {
           model: 'Teams',
           key: 'teamId'
@@ -45,7 +45,7 @@ module.exports = {
       },
       gameDateTime: {
         type: Sequelize.DATE,
-        unique: "gameCombo"
+        unique: 'gameCombo'
       },
       field: {
         type: Sequelize.INTEGER

@@ -51,7 +51,19 @@ const printTeamRow = function printTeamRow (teamId, teamName, division = '') {
   console.log(teamsTable.toString())
 }
 
+const printGameRow = function printGameRow (gameId='', field='', dateTime='', homeTeam='', awayTeam='', homeTeamScore='', awayTeamScore='') {
+  let gamesTable = new Table({
+    chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
+  })
+  gamesTable.push(
+      ['Game ID', 'Field', 'Date Time', 'Home Team', 'Away Team', 'Home Team Score', 'Away Team Score'],
+      [gameId, field, dateTime, homeTeam, awayTeam, homeTeamScore, awayTeamScore]
+  )
+  console.log(gamesTable.toString())
+}
+
 module.exports = {
+  printGameRow,
   printTeamRow,
   slackFailure,
   slackSuccess,
