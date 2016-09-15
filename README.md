@@ -18,6 +18,12 @@ docker-compose run --rm scrapers node_modules/.bin/sequelize db:migrate
 Sometimes this will fail the first time because the database container isn't running.  You have 2 options 1 run the database container
 before you run the migrations, or just run that command above twice and it will work.
 
+After this you need to run the facilities before you can scrape anything.  To do this run
+
+```
+docker-compose run --rm scrapers node Facilities.js
+```
+
 After that you are ready to run the scrapers
 ```
 docker-compose run --rm scrapers
