@@ -36,35 +36,34 @@ const insertOrUpdateGame = function insertOrUpdateGame (gameId, field, dateTime,
         helpers.printGameRow(gameId, field, dateTime, homeTeam, awayTeam, homeTeamScore, awayTeamScore)
         return helpers.slackFailure('Missing fieldId for game')
       }
-      //if (gameId) {
-        ////TODO: find/upsert by game id
-      //} else {
-        Games.upsert({
-          awayTeam: awayTeam,
-          homeTeam: homeTeam,
-          gameDateTime: dateTime,
-          field: field[0].id,
-          homeTeamScore: homeTeamScore,
-          awayTeamScore: awayTeamScore,
-          facility: facility
-        })
-        .then(function(inserted) {
-          if (inserted) {
-            log.info('***** Inserted Game row *****')
-          } else {
-            log.info('***** Updated Game row *****')
-          }
-          helpers.printGameRow(gameId, field[0].id, dateTime, homeTeam, awayTeam, homeTeamScore, awayTeamScore)
-        })
-        .catch(function(err) {
-          helpers.minorErrorHeader('Error running update or insert on game ' + err)
-          return helpers.slackFailure('Error running update or insert on game ' + err)
-        })
-      //}
+      if (gameId) {
+        insertOrUpdateWithGameId (gameId, field[0].id, dateTime, homeTeam, awayTeam, homeTeamScore, awayTeamScore, facility)
+      } else {
+        console.log ('how did you get here')
+      }
     })
     .catch(function(err) {
       helpers.minorErrorHeader('Error running find or create on field ' + err)
       return helpers.slackFailure('Error running find or create on field ' + err)
+    })
+}
+
+function insertOrUpdateWithGameId (gameId, field, dateTime, homeTeam, awayTeam, homeTeamScore, awayTeamScore, facility) {
+  Games
+    .findOrCreate({where: {facilityGameId: gameId, facility: facility}})
+    .then(function(games, created) {
+      let game = games[0]
+      game.field = field
+      game.awayTeam = awayTeam
+      game.homeTeam = homeTeam
+      game.awayTeamScore = game.awayTeamScore
+      game.homeTeamScore = game.homeTeamScore
+      game.gameDateTime = dateTime
+      game.save()
+    })
+    .catch(function(err) {
+      helpers.minorErrorHeader('Error running find or create on game with gameid ' + err)
+      return helpers.slackFailure('Error running find or create on game with gameid ' + err)
     })
 }
 
