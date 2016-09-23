@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function(sequelize, DataTypes) {
-  var Fields = sequelize.define('Fields', {
+  var Field = sequelize.define('Field', {
     name: DataTypes.STRING,
     address: DataTypes.STRING,
     city: DataTypes.STRING,
@@ -10,9 +10,9 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        // associations can be defined here
+        Field.hasMany(models.Game)
       }
     }
   });
-  return Fields;
+  return Field;
 };

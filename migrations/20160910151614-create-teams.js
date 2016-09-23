@@ -18,10 +18,10 @@ module.exports = {
       division: {
         type: Sequelize.STRING
       },
-      facility: {
+      facilityId: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'Facilitys',
+          model: 'Facilities',
           key: 'id'
         }
       },

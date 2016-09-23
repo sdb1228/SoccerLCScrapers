@@ -1,13 +1,13 @@
 const helpers = require('./Helpers')
 const log = require('custom-logger').config({ level: 0 })
 var models = require("./models")
-var Teams = models.Teams
-var Games = models.Games
-var Facilitys = models.Facilitys
-var Fields = models.Fields
+var Team = models.Team
+var Game = models.Game
+var Facility = models.Facility
+var Field = models.Field
 
 const insertOrUpdateTeam = function insertOrUpdateTeam (teamId, teamName, division = '', facility) {
-  Teams.upsert({
+  Team.upsert({
     teamId: teamId,
     name: teamName,
     division: division,
@@ -28,7 +28,7 @@ const insertOrUpdateTeam = function insertOrUpdateTeam (teamId, teamName, divisi
 }
 
 const insertOrUpdateGame = function insertOrUpdateGame (gameId, field, dateTime, homeTeam, awayTeam, homeTeamScore, awayTeamScore, facility) {
-  Fields
+  Field
     .findOrCreate({where: {name: field}})
     .then(function(field, created) {
       if (!field[0].id) {
@@ -50,7 +50,7 @@ const insertOrUpdateGame = function insertOrUpdateGame (gameId, field, dateTime,
 }
 
 function insertOrUpdateWithGameId (gameId, field, dateTime, homeTeam, awayTeam, homeTeamScore, awayTeamScore, facility) {
-  Games
+  Game
     .findOrCreate({where: {facilityGameId: gameId, facility: facility}})
     .then(function(games, created) {
       let game = games[0]
@@ -73,7 +73,7 @@ function insertOrUpdateWithGameId (gameId, field, dateTime, homeTeam, awayTeam, 
 
 const initialFacilityInsert = function initialFacilityInsert (facilities) {
   for (let facility of facilities) {
-    Facilitys.upsert({
+    Facility.upsert({
       name: facility.name,
       address: facility.address,
       city: facility.city,

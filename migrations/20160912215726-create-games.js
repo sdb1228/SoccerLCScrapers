@@ -8,30 +8,30 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      awayTeam: {
-        type: Sequelize.STRING,
+      awayTeamId: {
+        type: Sequelize.INTEGER,
         unique: 'gameCombo',
         references: {
           model: 'Teams',
-          key: 'teamId'
+          key: 'id'
         }
       },
-      facility: {
+      facilityId: {
         type: Sequelize.INTEGER,
         references: {
-          model: 'Facilitys',
+          model: 'Facilities',
           key: 'id'
         }
       },
       facilityGameId: {
         type: Sequelize.STRING,
       },
-      homeTeam: {
-        type: Sequelize.STRING,
+      homeTeamId: {
+        type: Sequelize.INTEGER,
         unique: 'gameCombo',
         references: {
           model: 'Teams',
-          key: 'teamId'
+          key: 'id'
         }
       },
       awayTeamScore: {
@@ -47,8 +47,12 @@ module.exports = {
         type: Sequelize.DATE,
         unique: 'gameCombo'
       },
-      field: {
-        type: Sequelize.INTEGER
+      fieldId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Fields',
+          key: 'id'
+        }
       },
       tournament: {
         type: Sequelize.INTEGER
