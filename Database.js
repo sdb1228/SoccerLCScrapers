@@ -39,6 +39,7 @@ const insertOrUpdateGame = function insertOrUpdateGame (gameId, field, dateTime,
       if (gameId) {
         insertOrUpdateWithGameId (gameId, field[0].id, dateTime, homeTeam, awayTeam, homeTeamScore, awayTeamScore, facility)
       } else {
+        // GAMES WITHOUT GAMEID
         console.log ('how did you get here')
       }
     })
@@ -59,7 +60,10 @@ function insertOrUpdateWithGameId (gameId, field, dateTime, homeTeam, awayTeam, 
       game.awayTeamScore = game.awayTeamScore
       game.homeTeamScore = game.homeTeamScore
       game.gameDateTime = dateTime
-      game.save()
+      game.save().catch(function(error) {
+        helpers.minorErrorHeader('Error saving gameID ' + gameId+ ' with facility ' + facility + ' ERROR: ' + err)
+        return helpers.slackFailure('Error saving gameID ' + gameId+ ' with facility ' + facility + ' ERROR: ' + err)
+      })
     })
     .catch(function(err) {
       helpers.minorErrorHeader('Error running find or create on game with gameid ' + err)

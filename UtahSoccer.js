@@ -6,7 +6,7 @@ const log = require('custom-logger').config({ level: 0 })
 
 const main = function main () {
   //helpers.headerBreak('Parsing fields Utah Soccer')
-  //getFields()
+  getFields()
   //helpers.slackSuccess('Utah Soccer fields were updated successfully')
   //helpers.headerBreak('Utah Soccer fields were updated successfully')
   //helpers.headerBreak('Parsing Teams Utah Soccer')
@@ -14,7 +14,7 @@ const main = function main () {
   //helpers.slackSuccess('Utah Soccer teams were updated successfully')
   //helpers.headerBreak('Utah Soccer teams were updated successfully')
   //helpers.headerBreak('Parsing Games Unplayed Utah Soccer')
-  getGames()
+  // getGames()
 }
 
 function getTeams () {
@@ -55,6 +55,13 @@ function getFields() {
       }
       const $ = window.$
       console.log($('div.bigldisplaydiv')[2])
+      for (let i = 0; i < $('div.bigldisplaydiv')[2].children[0].children.length; i++){
+        if ($('div.bigldisplaydiv')[2].children[0].children[i].title === ''){
+          console.log('gross br')
+        } else {
+          console.log($('div.bigldisplaydiv')[2].children[0].children[i].title)
+        }
+      }
 
       //if ($('#bigldisplaydiv')) {
         //const teams = $('option')
