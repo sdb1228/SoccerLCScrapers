@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function(sequelize, DataTypes) {
-  var Game = sequelize.define('Game', {
+  var Game = sequelize.define('game', {
     awayTeamId: DataTypes.INTEGER,
     facilityGameId: DataTypes.STRING,
     facilityId: DataTypes.INTEGER,
