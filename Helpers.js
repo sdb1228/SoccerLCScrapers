@@ -51,6 +51,14 @@ const printTeamRow = function printTeamRow (teamId, teamName, division = '') {
   console.log(teamsTable.toString())
 }
 
+const wait = function wait (ms) {
+   var start = new Date().getTime();
+   var end = start;
+   while(end < start + ms) {
+     end = new Date().getTime();
+  }
+}
+
 const printGameRow = function printGameRow (gameId='', field='', dateTime='', homeTeam='', awayTeam='', homeTeamScore='', awayTeamScore='') {
   let gamesTable = new Table({
     chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
@@ -71,4 +79,5 @@ module.exports = {
   minorHeader,
   headerBreak,
   lineBreaks,
+  wait,
 }

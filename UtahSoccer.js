@@ -54,22 +54,30 @@ function getFields() {
         return
       }
       const $ = window.$
-      console.log($('div.bigldisplaydiv')[2])
-      for (let i = 0; i < $('div.bigldisplaydiv')[2].children[0].children.length; i++){
-        if ($('div.bigldisplaydiv')[2].children[0].children[i].title === ''){
-          console.log('gross br')
+      let fieldName = ""
+      let fieldAddress = ""
+      let extraElement = false
+      for (let i = 0; i < $('div.bigldisplaydiv')[2].children[0].children.length; i++) {
+        if ($('div.bigldisplaydiv')[2].children[0].children[i].title === '') {
+          continue
         } else {
-          console.log($('div.bigldisplaydiv')[2].children[0].children[i].title)
+          if (extraElement) {
+            extraElement = false
+            continue
+          }
+          if (i+1 > $('div.bigldisplaydiv')[2].children[0].children.length ) {
+            break
+          }
+          fieldAddress = $('div.bigldisplaydiv')[2].children[0].children[i].title
+          fieldName = $('div.bigldisplaydiv')[2].children[0].children[i+1].title
+          if (fieldAddress === fieldName) {
+            extraElement = true
+            continue
+          }
+          let arrayAddress = fieldAddress.split(',')
+          Database.insertOrUpdateField(fieldName, arrayAddress[0].trim(), arrayAddress[1].trim(), "Utah")
         }
       }
-
-      //if ($('#bigldisplaydiv')) {
-        //const teams = $('option')
-        //log.info(teams.length + ' Teams returned from utahsoccer')
-        //parseTeams($, teams)
-      //} else {
-        //helpers.minorErrorHeader('NO TEAMS RETURNED FROM CALL RETURNING')
-      //}
     }
   )
 }
