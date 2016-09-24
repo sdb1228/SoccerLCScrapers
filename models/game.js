@@ -14,10 +14,10 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        Game.hasOne(models.Facility)
-        Game.hasOne(models.Field)
-        Game.hasOne(models.Team, {as: 'AwayTeam', foreignKey: 'awayTeamId'})
-        Game.hasOne(models.Team, {as: 'HomeTeam', foreignKey: 'homeTeamId'})
+        Game.belongsTo(models.Facility)
+        Game.belongsTo(models.Field)
+        Game.belongsTo(models.Team, {as: 'AwayTeam', foreignKey: 'awayTeamId'})
+        Game.belongsTo(models.Team, {as: 'HomeTeam', foreignKey: 'homeTeamId'})
       }
     }
   });
