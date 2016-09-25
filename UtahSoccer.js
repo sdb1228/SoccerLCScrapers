@@ -4,17 +4,17 @@ const axios = require('axios')
 const helpers = require('./Helpers')
 const log = require('custom-logger').config({ level: 0 })
 
-const main = function main () {
-  //helpers.headerBreak('Parsing fields Utah Soccer')
+const main = function main (callback) {
+  helpers.headerBreak('Parsing fields Utah Soccer')
   getFields()
-  //helpers.slackSuccess('Utah Soccer fields were updated successfully')
-  //helpers.headerBreak('Utah Soccer fields were updated successfully')
-  //helpers.headerBreak('Parsing Teams Utah Soccer')
-  //getTeams()
-  //helpers.slackSuccess('Utah Soccer teams were updated successfully')
-  //helpers.headerBreak('Utah Soccer teams were updated successfully')
-  //helpers.headerBreak('Parsing Games Unplayed Utah Soccer')
-  // getGames()
+  helpers.slackSuccess('Utah Soccer fields were updated successfully')
+  helpers.headerBreak('Utah Soccer fields were updated successfully')
+  helpers.headerBreak('Parsing Teams Utah Soccer')
+  getTeams()
+  helpers.slackSuccess('Utah Soccer teams were updated successfully')
+  helpers.headerBreak('Utah Soccer teams were updated successfully')
+  helpers.headerBreak('Parsing Games Unplayed Utah Soccer')
+  getGames()
 }
 
 function getTeams () {

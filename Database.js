@@ -51,7 +51,7 @@ const insertOrUpdateGame = function insertOrUpdateGame (gameId, field, dateTime,
 
 function insertOrUpdateWithGameId (gameId, field, dateTime, homeTeam, awayTeam, homeTeamScore, awayTeamScore, facility) {
   Game
-    .findOrCreate({where: {facilityGameId: gameId, facility: facility}})
+    .findOrCreate({where: {facilityGameId: gameId, facilityId: facility}})
     .then(function(games, created) {
       let game = games[0]
       game.field = field
