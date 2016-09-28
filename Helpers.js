@@ -51,6 +51,17 @@ const printTeamRow = function printTeamRow (teamId, teamName, division = '') {
   console.log(teamsTable.toString())
 }
 
+const printFieldRow = function printFieldRow (fieldName = '', fieldAddress = '', fieldCity = '', fieldState = '', fieldZip = '') {
+  let fieldsTable = new Table({
+    chars: {'mid': '', 'left-mid': '', 'mid-mid': '', 'right-mid': ''},
+  })
+  fieldsTable.push(
+      ['Field Name', 'Field Address', 'Field City', 'Field State', 'Field Zip'],
+      [fieldName, fieldAddress, fieldCity, fieldState, fieldZip]
+  )
+  console.log(fieldsTable.toString())
+}
+
 const wait = function wait (ms) {
    var start = new Date().getTime();
    var end = start;
@@ -80,4 +91,5 @@ module.exports = {
   headerBreak,
   lineBreaks,
   wait,
+  printFieldRow,
 }

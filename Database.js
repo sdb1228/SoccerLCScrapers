@@ -94,32 +94,16 @@ const initialFacilityInsert = function initialFacilityInsert (facilities) {
   }
 }
 
-const insertOrUpdateField = function insertOrUpdateField (name, address, city, state, zip) {
-  Field
-    .findOrCreate({where: {name: name}})
-    .then(function(fields, created) {
-      let field = fields[0]
-      if (address) {
-        field.address = address
-      }
-      if (city) {
-        field.city = city
-      }
-      if (state) {
-        field.state = field.state
-      }
-      if (zip) {
-        field.zip = field.zip
-      }
-      field.save().catch(function(error) {
-        helpers.minorErrorHeader('Error saving field ' + name + ' ERROR: ' + err)
-        return helpers.slackFailure('Error saving field ' + ' ERROR: ' + err)
-      })
-    })
-    .catch(function(err) {
-      helpers.minorErrorHeader('Error running update or insert on field ' + err)
-      return helpers.slackFailure('Error running update or insert on field ' + err)
-    })
+const insertOrUpdateField = function insertOrUpdateField (data) {
+  return Field.create(data)
+  .then(data => {
+    log.info('***** Inserted Field row *****')
+    console.log(data.dataValues)
+    return data
+  })
+  .catch(err => {
+    throw err
+  })
 }
 
 module.exports = {

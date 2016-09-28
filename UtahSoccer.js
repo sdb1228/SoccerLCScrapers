@@ -4,17 +4,33 @@ const axios = require('axios')
 const helpers = require('./Helpers')
 const log = require('custom-logger').config({ level: 0 })
 
-const main = function main (callback) {
+const main = function main () {
   helpers.headerBreak('Parsing fields Utah Soccer')
-  getFields()
-  helpers.slackSuccess('Utah Soccer fields were updated successfully')
-  helpers.headerBreak('Utah Soccer fields were updated successfully')
-  helpers.headerBreak('Parsing Teams Utah Soccer')
-  getTeams()
-  helpers.slackSuccess('Utah Soccer teams were updated successfully')
-  helpers.headerBreak('Utah Soccer teams were updated successfully')
-  helpers.headerBreak('Parsing Games Unplayed Utah Soccer')
-  getGames()
+  return getFields()
+  .catch( (err) => {
+    helpers.minorErrorHeader('Error saving field in Utah Soccer ERROR: ' + err)
+    helpers.slackFailure('Error saving field in Utah Soccer ERROR: ' + err)
+    throw err
+  })
+  // .then(function(field) {
+  //   log.info('***** Inserted Field row *****')
+  // })
+  // .catch(function(error) {
+  //   helpers.minorErrorHeader('Error saving field ' + name + ' ERROR: ' + error)
+  //   return helpers.slackFailure('Error saving field ' + ' ERROR: ' + error)
+  // })
+
+
+
+  // helpers.slackSuccess('Utah Soccer fields were updated successfully')
+  // helpers.headerBreak('Utah Soccer fields were updated successfully')
+  // helpers.headerBreak('Parsing Teams Utah Soccer')
+  // getTeams()
+  // helpers.slackSuccess('Utah Soccer teams were updated successfully')
+  // helpers.headerBreak('Utah Soccer teams were updated successfully')
+  // helpers.headerBreak('Parsing Games Unplayed Utah Soccer')
+  // getGames()
+
 }
 
 function getTeams () {
@@ -42,44 +58,48 @@ function getTeams () {
 }
 
 function getFields() {
-  helpers.minorHeader('begin scraping of https://utahsoccer.org/uso_fields.php')
-  jsdom.env(
-    'https://utahsoccer.org/uso_fields.php',
-    ['http://code.jquery.com/jquery.js'],
-    function (errors, window) {
-      if (errors) {
-        helpers.minorErrorHeader('ERROR IN MAKING AJAX CALL IN GET FIELDS')
-        helpers.slackFailure('Error making ajax request to https://utahsoccer.org/uso_fields.php in Utah Soccer')
-        log.error(errors)
-        return
-      }
-      const $ = window.$
-      let fieldName = ""
-      let fieldAddress = ""
-      let extraElement = false
-      for (let i = 0; i < $('div.bigldisplaydiv')[2].children[0].children.length; i++) {
-        if ($('div.bigldisplaydiv')[2].children[0].children[i].title === '') {
-          continue
-        } else {
-          if (extraElement) {
-            extraElement = false
-            continue
-          }
-          if (i+1 > $('div.bigldisplaydiv')[2].children[0].children.length ) {
-            break
-          }
-          fieldAddress = $('div.bigldisplaydiv')[2].children[0].children[i].title
-          fieldName = $('div.bigldisplaydiv')[2].children[0].children[i+1].title
-          if (fieldAddress === fieldName) {
-            extraElement = true
-            continue
-          }
-          let arrayAddress = fieldAddress.split(',')
-          Database.insertOrUpdateField(fieldName, arrayAddress[0].trim(), arrayAddress[1].trim(), "Utah")
+  return new Promise ((resolve, reject) => {
+    helpers.minorHeader('begin scraping of https://utahsoccer.org/uso_fields.php')
+    jsdom.env(
+      'https://utahsoccer.org/uso_fields.php',
+      ['http://code.jquery.com/jquery.js'],
+      function (errors, window) {
+        if (errors) {
+          helpers.minorErrorHeader('ERROR IN MAKING AJAX CALL IN GET FIELDS')
+          helpers.slackFailure('Error making ajax request to https://utahsoccer.org/uso_fields.php in Utah Soccer')
+          log.error(errors)
+          return
         }
+        const $ = window.$
+        let fieldName = ""
+        let fieldAddress = ""
+        let extraElement = false
+        let promiseArray = []
+        for (let i = 0; i < $('div.bigldisplaydiv')[2].children[0].children.length; i++) {
+          if ($('div.bigldisplaydiv')[2].children[0].children[i].title === '') {
+            continue
+          } else {
+            if (extraElement) {
+              extraElement = false
+              continue
+            }
+            if (i+1 > $('div.bigldisplaydiv')[2].children[0].children.length ) {
+              break
+            }
+            fieldAddress = $('div.bigldisplaydiv')[2].children[0].children[i].title
+            fieldName = $('div.bigldisplaydiv')[2].children[0].children[i+1].title
+            if (fieldAddress === fieldName) {
+              extraElement = true
+              continue
+            }
+            let arrayAddress = fieldAddress.split(',')
+            promiseArray.push (Database.insertOrUpdateField({name: fieldName, address: arrayAddress[0].trim(), city: arrayAddress[1].trim(), state: 'Utah'}))
+          }
+        }
+        resolve(Promise.all(promiseArray))
       }
-    }
-  )
+    )
+  })
 }
 
 function parseTeams ($, teams) {
