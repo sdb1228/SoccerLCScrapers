@@ -1,6 +1,7 @@
 'use strict';
 module.exports = function(sequelize, DataTypes) {
   var Game = sequelize.define('Game', {
+    batchId: DataTypes.INTEGER,
     awayTeamId: DataTypes.INTEGER,
     facilityGameId: DataTypes.STRING,
     facilityId: DataTypes.INTEGER,
@@ -14,6 +15,7 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
+        Game.belongsTo(models.Batch, {foreignKey: 'batchId'})
         Game.belongsTo(models.Facility, {foreignKey: 'facilityId'})
         Game.belongsTo(models.Field, {foreignKey: 'fieldId'})
         Game.belongsTo(models.Team, {as: 'AwayTeam', foreignKey: 'awayTeamId'})

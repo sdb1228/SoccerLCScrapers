@@ -8,6 +8,14 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
+      batchId: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: 'Batches',
+          key: 'id'
+        }
+      },
       name: {
         type: Sequelize.STRING
       },
