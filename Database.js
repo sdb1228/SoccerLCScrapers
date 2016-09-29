@@ -6,24 +6,15 @@ var Game = models.Game
 var Facility = models.Facility
 var Field = models.Field
 
-const insertOrUpdateTeam = function insertOrUpdateTeam (teamId, teamName, division = '', facility) {
-  Team.upsert({
-    teamId: teamId,
-    name: teamName,
-    division: division,
-    facility: facility,
+const insertOrUpdateTeam = function insertOrUpdateTeam (data) {
+  return Team.create(data)
+  .then(data => {
+    log.info('***** Inserted Team row *****')
+    console.log(data.dataValues)
+    return data
   })
-  .then(function(inserted) {
-    if (inserted) {
-      log.info('***** Inserted Team row *****')
-    } else {
-      log.info('***** Updated Team row *****')
-    }
-    helpers.printTeamRow(teamId, teamName, division)
-  })
-  .catch(function(err) {
-    helpers.minorErrorHeader('Error running update or insert on team ' + err)
-    return helpers.slackFailure('Error running update or insert on team ' + err)
+  .catch(err => {
+    throw err
   })
 }
 
