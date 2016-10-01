@@ -1,157 +1,167 @@
 const jsdom = require('node-jsdom')
-const Database = require('./Database')
+const {RateLimiter} = require('limiter')
 const axios = require('axios')
-const helpers = require('./Helpers')
-const log = require('custom-logger').config({ level: 0 })
 
-const main = function main () {
-  return getFields()
-  .catch( (err) => {
-    helpers.minorErrorHeader('Error Scraping Fields in Utah Soccer ERROR: ' + err)
-    helpers.slackFailure('Error Scraping Fields in Utah Soccer ERROR: ' + err)
-    throw err
-  })
-  // return getTeams()
-  // .catch( (err) => {
-  //   helpers.minorErrorHeader('Error Scraping Teams in Utah Soccer ERROR: ' + err)
-  //   helpers.slackFailure('Error Scraping Teams in Utah Soccer ERROR: ' + err)
-  //   throw err
-  // })
-  // return getGames()
-  // .catch( (err) => {
-  //   helpers.minorErrorHeader('Error Scraping Games in Utah Soccer ERROR: ' + err)
-  //   helpers.slackFailure('Error Scraping Games in Utah Soccer ERROR: ' + err)
-  //   throw err
-  // })
+const requestLimiter = new RateLimiter(1, 'second')
+log = (message) => function log(r, _) {console.log(JSON.stringify({message: message, data: r}))}
+const fieldUrl = 'https://utahsoccer.org/uso_fields.php'
+const teamUrl = 'https://utahsoccer.org/public_get_my_team.php'
+const gameUrl = 'https://www.utahsoccer.org/public_manage_schedules_process.php?s=2015&l=&t=%20(All)&grid_id=list1&_search=false&nd=1460209489069&rows=5125&jqgrid_page=1&sidx=game_date%2C+game_number&sord=asc'
+
+function exceptionResult(e, data={}) {
+  return {
+    type: 'error',
+    exception: {message: e.message, stack: e.stack},
+    data: data
+  }
 }
 
-
-function getFields() {
-  return new Promise ((resolve, reject) => {
-    helpers.minorHeader('begin scraping of https://utahsoccer.org/uso_fields.php')
+function scrape(url, map, func) {
+  requestLimiter.removeTokens(1, () => {
+    log('fetching')({url: url})
+    try {
     jsdom.env(
-      'https://utahsoccer.org/uso_fields.php',
+      url,
       ['http://code.jquery.com/jquery.js'],
-      function (errors, window) {
-        if (errors) {
-          helpers.minorErrorHeader('ERROR IN MAKING AJAX CALL IN GET FIELDS')
-          helpers.slackFailure('Error making ajax request to https://utahsoccer.org/uso_fields.php in Utah Soccer')
-          log.error(errors)
-          throw errors
-        }
-        const $ = window.$
-        let fieldName = ""
-        let fieldAddress = ""
-        let extraElement = false
-        let promiseArray = []
-        for (let i = 0; i < $('div.bigldisplaydiv')[2].children[0].children.length; i++) {
-          if ($('div.bigldisplaydiv')[2].children[0].children[i].title === '') {
-            continue
-          } else {
-            if (extraElement) {
-              extraElement = false
-              continue
-            }
-            if (i+1 > $('div.bigldisplaydiv')[2].children[0].children.length ) {
-              break
-            }
-            fieldAddress = $('div.bigldisplaydiv')[2].children[0].children[i].title
-            fieldName = $('div.bigldisplaydiv')[2].children[0].children[i+1].title
-            if (fieldAddress === fieldName) {
-              extraElement = true
-              continue
-            }
-            let arrayAddress = fieldAddress.split(',')
-            promiseArray.push (Database.insertOrUpdateField({name: fieldName, address: arrayAddress[0].trim(), city: arrayAddress[1].trim(), state: 'Utah'}))
-          }
-        }
-        resolve(Promise.all(promiseArray))
-      }
-    )
-  })
-}
-
-function getTeams () {
-  helpers.minorHeader('Making endpoint call to https://utahsoccer.org/public_get_my_team.php')
-  return new Promise ((resolve, reject) => {
-    jsdom.env(
-      'https://utahsoccer.org/public_get_my_team.php',
-      ['http://code.jquery.com/jquery.js'],
-      function (errors, window) {
-        if (errors) {
-          helpers.minorErrorHeader('ERROR IN MAKING AJAX CALL IN GET TEAMS')
-          helpers.slackFailure('Error making ajax request to https://utahsoccer.org/public_get_my_team.php in Utah Soccer')
-          log.error(errors)
-          throw errors
-        }
-        const $ = window.$
-        if ($('option')) {
-          const teams = $('option')
-          log.info(teams.length + ' Teams returned from utahsoccer')
-          resolve(parseTeams($, teams))
-        } else {
-          helpers.minorErrorHeader('NO TEAMS RETURNED FROM CALL RETURNING')
-          helpers.slackFailure('There are no teams returned from Utah Soccer AJAX Call')
-          throw 'There are no teams returned from Utah Soccer AJAX Call'
+      (err, window) => {
+        try {
+          if (err) throw err
+          func(window, window.$)
+        } catch (e) {
+          map(exceptionResult(e, {url: url, html: window.$('html').html()}))
         }
       }
-    )
-  })
-}
-
-function parseTeams ($, teams) {
-  return new Promise ((resolve, reject) => {
-    helpers.minorHeader('Parsing Utah Soccer teams')
-    let promiseArray = []
-    for (let i = 0; i < teams.length; i++) {
-      if (!teams[i].value || !teams[i].text) {
-        helpers.minorErrorHeader('Team name or teamid doesnt exist')
-        helpers.slackFailure('Encountered team without name or teamid in Utah Soccer')
-        continue
-      }
-      promiseArray.push(Database.insertOrUpdateTeam({teamId: teams[i].value, name: teams[i].text, division: '', facilityId: 1}))
+    )} catch(e) {
+      map(exceptionResult(e, {url: url}))
     }
-    resolve(Promise.all(promiseArray))
   })
 }
 
-function getGames () {
-  return new Promise ((resolve, reject) => {
-    axios.get('https://www.utahsoccer.org/public_manage_schedules_process.php?s=2015&l=&t=%20(All)&grid_id=list1&_search=false&nd=1460209489069&rows=5125&jqgrid_page=1&sidx=game_date%2C+game_number&sord=asc')
-      .then(function (response) {
-        if (!response.data) {
-          helpers.minorErrorHeader('NO GAMES RETURNED FROM CALL RETURNING')
-          helpers.slackFailure('There are no games returned from Utah Soccer AJAX Call')
-          throw 'There are no games returned from Utah Soccer AJAX Call'
-        }
-        log.info(response.data.rows.length + ' Games returned from utahsoccer')
-        resolve(parseGames(response.data.rows))
-      })
-    })
+function apiScrape(url, map, func) {
+  requestLimiter.removeTokens(1, () => {
+    log('fetching')({url: url})
+    try {
+      axios.get(url)
+        .then(function (response) {
+          func(response)
+        })
+        .catch(err => {
+          map(exceptionResult(e, {url: url}))
+        })
+      } catch(e) {
+      map(exceptionResult(e, {url: url}))
+    }
+  })
 }
 
-function parseGames (games) {
-  helpers.minorHeader('Parsing Utah Soccer games')
-  return new Promise ((resolve, reject) => {
+function fetchTeams(_, map) {
+  scrape(teamUrl, map, (window, $) => {
+    const teams = $('option')
+    for (let i = 0; i < teams.length; i++) {
+      map({
+        type: 'team',
+        teamId: teams[i].value,
+        name: teams[i].text,
+        division: '',
+        facilityId: 1
+      })
+    }
+  })
+}
+
+function fetchFields(_, map) {
+  scrape(fieldUrl, map, (window, $) => {
+    let fieldName = ""
+    let fieldAddress = ""
+    let extraElement = false
+    let promiseArray = []
+    for (let i = 0; i < $('div.bigldisplaydiv')[2].children[0].children.length; i++) {
+      if ($('div.bigldisplaydiv')[2].children[0].children[i].title === '') {
+        continue
+      } else {
+        if (extraElement) {
+          extraElement = false
+          continue
+        }
+        if (i+1 > $('div.bigldisplaydiv')[2].children[0].children.length ) {
+          break
+        }
+        fieldAddress = $('div.bigldisplaydiv')[2].children[0].children[i].title
+        fieldName = $('div.bigldisplaydiv')[2].children[0].children[i+1].title
+        if (fieldAddress === fieldName) {
+          extraElement = true
+          continue
+        }
+        let arrayAddress = fieldAddress.split(',')
+        map({
+          type: 'field',
+          name: fieldName,
+          address: arrayAddress[0].trim(),
+          city: arrayAddress[1].trim(),
+          state: 'Utah'
+        })
+      }
+    }
+  })
+}
+
+function fetchGames(_, map) {
+  const dateOffset = 1
+  apiScrape(gameUrl, map, (response) => {
+    let games = response.data.rows
     for (let i = 0; i < games.length; i++) {
       if (games[i].game_type !== 'tournament' || games[i].game_type !== 'final') {
         const division = games[i].league_abbreviation + ' ' + games[i].division_abrev
-        log.info('updating Home Team ID: ' + games[i].home_team_id + ' Home Team Name: ' + games[i].home_team_name + ' Division: ' + division)
-        Database.insertOrUpdateTeam(games[i].home_team_id, games[i].home_team_name, division , 1)
-        log.info('updating Away Team ID: ' + games[i].home_team_id + ' Away Team Name: ' + games[i].home_team_name + ' Division: ' + division)
-        Database.insertOrUpdateTeam(games[i].away_team_id, games[i].away_team_name, division, 1)
-        Database.insertOrUpdateGame(
-            games[i].game_id,
-            games[i].field_name,
-            new Date(games[i].day_of_week + ' ' + games[i].game_date + ' ' + games[i].time_ampm),
-            games[i].home_team_id,
-            games[i].away_team_id,
-            undefined,
-            undefined,
-            1
-            )
+        map({
+          type: 'team',
+          teamId: games[i].home_team_id,
+          name: games[i].home_team_name,
+          division: division,
+          facilityId: 1
+        })
+        map({
+          type: 'team',
+          teamId: games[i].away_team_id,
+          name: games[i].away_team_name,
+          division: division,
+          facilityId: 1
+        })
+        map({
+          type: 'game',
+          gameId: games[i].game_id,
+          field: games[i].field_name,
+          gameDateTime: new Date(games[i].day_of_week + ' ' + games[i].game_date + ' ' + games[i].time_ampm),
+          homeTeamId: games[i].home_team_id,
+          awayTeamId: games[i].away_team_id,
+          facilityId: 1
+        })
       }
     }
   })
 }
-module.exports = main
+
+handlers = {
+  start: [fetchFields, fetchTeams, fetchGames],
+  game: [log('game')],
+  team: [log('team')],
+  error: [log('error')],
+  default: [log('unhandled result')]
+}
+
+function map(result) {
+  funcs = handlers[result.type] || handlers.default
+  funcs.forEach((func) => {
+    try {
+      console.log(JSON.stringify({functionCall: func.name}))
+      func(result, map)
+    } catch (e) {
+      map(exceptionResult(e))
+    }
+  })
+}
+
+function go(){
+  map({type: 'start'})
+}
+
+go()
