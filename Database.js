@@ -7,7 +7,7 @@ var Facility = models.Facility
 var Field = models.Field
 
 const insertOrUpdateTeam = function insertOrUpdateTeam (data) {
-  return Team.create(data)
+  Team.upsert(data)
   .then(data => {
     log.info('***** Inserted Team row *****')
     console.log(data.dataValues)
