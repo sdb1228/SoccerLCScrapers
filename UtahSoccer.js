@@ -15,7 +15,7 @@ function exceptionResult(e, data={}) {
   }
 }
 
-function fetchTeams(_) {
+function fetchTeams(startData) {
   s.scrape(teamUrl, (window, $) => {
     const teams = $('option')
     for (let i = 0; i < teams.length; i++) {
@@ -31,7 +31,7 @@ function fetchTeams(_) {
   })
 }
 
-function fetchFields(_) {
+function fetchFields(startData) {
   s.scrape(fieldUrl, (window, $) => {
     let fieldName = ""
     let fieldAddress = ""
@@ -57,6 +57,7 @@ function fetchFields(_) {
         let arrayAddress = fieldAddress.split(',')
         s.sendEvent({
           type: 'field',
+          batchId: startData.batchId,
           name: fieldName,
           address: arrayAddress[0].trim(),
           city: arrayAddress[1].trim(),
@@ -67,14 +68,16 @@ function fetchFields(_) {
   })
 }
 
-function fetchGames(_) {
+function fetchGames(startData) {
   s.rawScrape(gameUrl, (response) => {
-    let games = response.data.rows
+    let json = JSON.parse(response.text)
+    let games = json.rows
     for (let i = 0; i < games.length; i++) {
       if (games[i].game_type !== 'tournament' || games[i].game_type !== 'final') {
         const division = games[i].league_abbreviation + ' ' + games[i].division_abrev
         s.sendEvent({
           type: 'team',
+          batchId: startData.batchId,
           teamId: games[i].home_team_id,
           name: games[i].home_team_name,
           division: division,
@@ -82,6 +85,7 @@ function fetchGames(_) {
         })
         s.sendEvent({
           type: 'team',
+          batchId: startData.batchId,
           teamId: games[i].away_team_id,
           name: games[i].away_team_name,
           division: division,
@@ -89,6 +93,7 @@ function fetchGames(_) {
         })
         s.sendEvent({
           type: 'game',
+          batchId: startData.batchId,
           gameId: games[i].game_id,
           field: games[i].field_name,
           gameDateTime: new Date(games[i].day_of_week + ' ' + games[i].game_date + ' ' + games[i].time_ampm),
@@ -114,7 +119,7 @@ handlers = {
   start: [
     fetchFields,
     fetchTeams,
-    // fetchGames,
+    fetchGames,
   ],
   game: [s.log('game')],
   team: [s.log('team')],
