@@ -1,3 +1,5 @@
-const LetsPlay = require('./LetsPlay')
+// const LetsPlay = require('./LetsPlay')
+const UtahSoccer = require('./UtahSoccer')
 
-LetsPlay.scrape()
+// LetsPlay.scrape()
+UtahSoccer.scrape()

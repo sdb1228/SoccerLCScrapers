@@ -1,9 +1,8 @@
-const jsdom = require('node-jsdom')
-const {RateLimiter} = require('limiter')
-const axios = require('axios')
+const db = require('./models')
 
-const requestLimiter = new RateLimiter(1, 'second')
-log = (message) => function log(r, _) {console.log(JSON.stringify({message: message, data: r}))}
+let Scraper = require('./Scraper')
+let s = new Scraper()
+
 const fieldUrl = 'https://utahsoccer.org/uso_fields.php'
 const teamUrl = 'https://utahsoccer.org/public_get_my_team.php'
 const gameUrl = 'https://www.utahsoccer.org/public_manage_schedules_process.php?s=2015&l=&t=%20(All)&grid_id=list1&_search=false&nd=1460209489069&rows=5125&jqgrid_page=1&sidx=game_date%2C+game_number&sord=asc'
@@ -16,50 +15,13 @@ function exceptionResult(e, data={}) {
   }
 }
 
-function scrape(url, map, func) {
-  requestLimiter.removeTokens(1, () => {
-    log('fetching')({url: url})
-    try {
-    jsdom.env(
-      url,
-      ['http://code.jquery.com/jquery.js'],
-      (err, window) => {
-        try {
-          if (err) throw err
-          func(window, window.$)
-        } catch (e) {
-          map(exceptionResult(e, {url: url, html: window.$('html').html()}))
-        }
-      }
-    )} catch(e) {
-      map(exceptionResult(e, {url: url}))
-    }
-  })
-}
-
-function apiScrape(url, map, func) {
-  requestLimiter.removeTokens(1, () => {
-    log('fetching')({url: url})
-    try {
-      axios.get(url)
-        .then(function (response) {
-          func(response)
-        })
-        .catch(err => {
-          map(exceptionResult(e, {url: url}))
-        })
-      } catch(e) {
-      map(exceptionResult(e, {url: url}))
-    }
-  })
-}
-
-function fetchTeams(_, map) {
-  scrape(teamUrl, map, (window, $) => {
+function fetchTeams(_) {
+  s.scrape(teamUrl, (window, $) => {
     const teams = $('option')
     for (let i = 0; i < teams.length; i++) {
-      map({
+      s.sendEvent({
         type: 'team',
+        batchId: startData.batchId,
         teamId: teams[i].value,
         name: teams[i].text,
         division: '',
@@ -69,8 +31,8 @@ function fetchTeams(_, map) {
   })
 }
 
-function fetchFields(_, map) {
-  scrape(fieldUrl, map, (window, $) => {
+function fetchFields(_) {
+  s.scrape(fieldUrl, (window, $) => {
     let fieldName = ""
     let fieldAddress = ""
     let extraElement = false
@@ -93,7 +55,7 @@ function fetchFields(_, map) {
           continue
         }
         let arrayAddress = fieldAddress.split(',')
-        map({
+        s.sendEvent({
           type: 'field',
           name: fieldName,
           address: arrayAddress[0].trim(),
@@ -105,28 +67,27 @@ function fetchFields(_, map) {
   })
 }
 
-function fetchGames(_, map) {
-  const dateOffset = 1
-  apiScrape(gameUrl, map, (response) => {
+function fetchGames(_) {
+  s.rawScrape(gameUrl, (response) => {
     let games = response.data.rows
     for (let i = 0; i < games.length; i++) {
       if (games[i].game_type !== 'tournament' || games[i].game_type !== 'final') {
         const division = games[i].league_abbreviation + ' ' + games[i].division_abrev
-        map({
+        s.sendEvent({
           type: 'team',
           teamId: games[i].home_team_id,
           name: games[i].home_team_name,
           division: division,
           facilityId: 1
         })
-        map({
+        s.sendEvent({
           type: 'team',
           teamId: games[i].away_team_id,
           name: games[i].away_team_name,
           division: division,
           facilityId: 1
         })
-        map({
+        s.sendEvent({
           type: 'game',
           gameId: games[i].game_id,
           field: games[i].field_name,
@@ -140,28 +101,27 @@ function fetchGames(_, map) {
   })
 }
 
-handlers = {
-  start: [fetchFields, fetchTeams, fetchGames],
-  game: [log('game')],
-  team: [log('team')],
-  error: [log('error')],
-  default: [log('unhandled result')]
-}
-
-function map(result) {
-  funcs = handlers[result.type] || handlers.default
-  funcs.forEach((func) => {
-    try {
-      console.log(JSON.stringify({functionCall: func.name}))
-      func(result, map)
-    } catch (e) {
-      map(exceptionResult(e))
-    }
+function createBatchAndRun(handlers) {
+  db.Batch.create({status: 'pending'}).then((batch) => {
+    s.runScraper(handlers, {batchId: batch.id})
   })
 }
 
-function go(){
-  map({type: 'start'})
+const teamTask = s.newTask('batch/:batchId/team/:teamId')
+const batchTask = s.newTask('batch/:batchId')
+
+handlers = {
+  start: [
+    fetchFields,
+    fetchTeams,
+    // fetchGames,
+  ],
+  game: [s.log('game')],
+  team: [s.log('team')],
+  error: [s.log('error')],
+  default: [s.log('unhandled result')]
 }
 
-go()
+module.exports = {
+  scrape: () => createBatchAndRun(handlers)
+}

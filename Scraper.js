@@ -72,6 +72,18 @@ class Scraper {
     })
   }
 
+  rawScrape(url, func) {
+   this.log('fetching')({url: url})
+   this.get(url, (err, res) => {
+     try {
+       if (err) throw err
+       func(res)
+     } catch (e) {
+       this.sendEvent(this.exceptionResult(e, {url: url}))
+     }
+   })
+ }
+
   sendEvent(result) {
     console.log(JSON.stringify({event: result}))
     let funcs = this.handlers[result.type] || this.handlers.default
