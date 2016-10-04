@@ -48,6 +48,7 @@ function fetchTeam(teamUrlData) {
 function saveTeam(teamData) {
   s.sendEvent({
     type: 'teamSaved',
+    batchId: teamData.batchId,
     teamId: teamData.teamId
   })
 }
@@ -93,18 +94,21 @@ function createBatchAndRun(handlers) {
   })
 }
 
+const teamTask = s.newTask('batch/:batchId/team/:teamId')
+const batchTask = s.newTask('batch/:batchId')
+
 const handlers = {
   start: [
     fetchTeamUrls
   ],
   teamUrl: [
-    s.newTask((data) => `batch/teams/${data.teamId}`),
+    teamTask.start(),
     fetchTeam
   ],
   team: [s.log('team'), saveTeam],
-  teamSaved: [s.taskSucceeded((data) => `batch/teams/${data.teamId}`)],
-  error: [s.taskFailed('batch'), s.log('error')],
-  'batch:succeeded': [s.log('batch')],
+  teamSaved: [teamTask.succeed()],
+  error: [s.log('error')],
+  [batchTask.succeeded]: [s.log('batch')],
   default: [s.log('unhandled result')]
 }
 

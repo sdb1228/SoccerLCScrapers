@@ -1,6 +1,34 @@
 const jsdom = require('node-jsdom')
 const {RateLimiter} = require('limiter')
 const superagent = require('superagent')
+const UrlPattern = require('url-pattern')
+
+class Task extends UrlPattern {
+  constructor(scraper, taskName) {
+    super(taskName)
+    this.succeeded = `${taskName}?succeeded`
+    this.failed = `${taskName}?failed`
+    this.scraper = scraper
+  }
+
+  start() {
+    return function start(eventData) {
+      this.scraper.taskPending(this.stringify(eventData))
+    }.bind(this)
+  }
+
+  succeed() {
+    return function succeed(eventData) {
+      this.scraper.taskSucceeded(this.stringify(eventData))
+    }.bind(this)
+  }
+
+  fail() {
+    return function fail(eventData) {
+      this.scraper.taskFailed(this.stringify(eventData))
+    }.bind(this)
+  }
+}
 
 class Scraper {
   log(message) {
@@ -78,45 +106,45 @@ class Scraper {
   taskDone(taskName, status) {
     this.tasks[taskName] = status
     console.log(JSON.stringify({tasks: this.tasks}))
-    for (let eventName in this.handlers) {
-      if (eventName.includes(':')) {
-        let [task, triggerStatus] = eventName.split(':')
-        if (status === triggerStatus && this.taskStatus(task) === triggerStatus) {
-          this.sendEvent({
-            type: eventName,
+    for (let handler in this.handlers) {
+      // if the handler is a task event...
+      if (handler.includes('?')) {
+        // get the task and status to trigger on
+        let [task, triggerStatus] = handler.split('?')
+        // see if our just completed task could trigger the handler
+        let pat = new UrlPattern(`${task}(/*)`)
+        let match = pat.match(taskName)
+        // if the handler's status is would activate the trigger...
+        if (match && status === triggerStatus && this.taskStatus(pat.stringify(match)) === triggerStatus) {
+          delete match._ // some extra match junk
+          this.sendEvent(Object.assign({
+            type: handler,
             status: triggerStatus
-          })
+          }, match))
         }
       }
     }
   }
 
-  interpolateTaskName(taskName, eventData) {
-    if (typeof taskName === 'function') return taskName(eventData)
-    return taskName
+  newTask(taskName) {
+    return new Task(this, taskName)
   }
 
-  newTask(taskName) {
-    return (eventData) => {
-      // should this leave existing values?
-      this.tasks[this.interpolateTaskName(taskName, eventData)] = 'pending'
-    }
+  taskPending(taskName) {
+    // should this leave existing values?
+    this.tasks[taskName] = 'pending'
   }
 
   // if all sub tasks are successful, emit parent task success events
   taskSucceeded(taskName) {
-    return (eventData) => {
-      // should this overwrite failure?
-      this.taskDone(this.interpolateTaskName(taskName, eventData), 'succeeded')
-    }
+    // should this overwrite failure?
+    this.taskDone(taskName, 'succeeded')
   }
 
   // if any sub task is failed, emit parent task failure events
   taskFailed(taskName) {
-    return (eventData) => {
-      // should this overwrite success?
-      this.taskDone(this.interpolateTaskName(taskName, eventData), 'failed')
-    }
+    // should this overwrite success?
+    this.taskDone(taskName, 'failed')
   }
 }
 
