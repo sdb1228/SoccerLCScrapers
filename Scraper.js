@@ -61,11 +61,14 @@ class Scraper {
         if (err) throw err
         let doc = jsdom.jsdom(res.text, {url: url})
         let window = doc.defaultView
-        try {
-          jsdom.jQueryify(window, 'http://code.jquery.com/jquery.js', func)
-        } catch (e) {
-          this.sendEvent(this.exceptionResult(e, {url: url, html: window.$('html').html()}))
-        }
+        jsdom.jQueryify(window, 'http://code.jquery.com/jquery.js', (window, $) => {
+          // jQueryify eats errors
+          try {
+            func(window, $)
+          } catch (e) {
+            this.sendEvent(this.exceptionResult(e, {url: url, html: window.$('html').html()}))
+          }
+        })
       } catch (e) {
         this.sendEvent(this.exceptionResult(e, {url: url}))
       }
@@ -88,11 +91,13 @@ class Scraper {
     console.log(JSON.stringify({event: result}))
     let funcs = this.handlers[result.type] || this.handlers.default
     funcs.forEach((func) => {
-      try {
-        func(result)
-      } catch (e) {
-        this.sendEvent(this.exceptionResult(e))
-      }
+      setImmediate(() => {
+        try {
+          func(result)
+        } catch (e) {
+          this.sendEvent(this.exceptionResult(e))
+        }
+      })
     })
   }
 

@@ -11,6 +11,7 @@ module.exports = {
       batchId: {
         allowNull: false,
         type: Sequelize.INTEGER,
+        unique: 'batchTeam',
         references: {
           model: 'Batches',
           key: 'id'
@@ -21,17 +22,13 @@ module.exports = {
       },
       teamId: {
         type: Sequelize.STRING,
-        unique: true
+        unique: 'batchTeam'
       },
       division: {
         type: Sequelize.STRING
       },
       facilityId: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'Facilities',
-          key: 'id'
-        }
+        type: Sequelize.INTEGER
       },
       deletedAt: {
         type: Sequelize.DATE
