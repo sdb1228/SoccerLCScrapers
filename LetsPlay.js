@@ -53,6 +53,10 @@ function saveTeam(teamData) {
   })
 }
 
+function markBatchDone(batchSuccessData) {
+  db.Batch.update({status: 'complete'}, {where: {id: batchSuccessData.batchId}})
+}
+
 function fetchGames(_) {
   const dateOffset = 1
   s.scrape(rootUrl + `games?utf8=✓&date_offset=${dateOffset}&commit=Get+Schedule`, map, (window, $) => {
@@ -89,7 +93,7 @@ function fetchGames(_) {
 }
 
 function createBatchAndRun(handlers) {
-  db.Batch.create().then((batch) => {
+  db.Batch.create({status: 'pending'}).then((batch) => {
     s.runScraper(handlers, {batchId: batch.id})
   })
 }
@@ -108,7 +112,7 @@ const handlers = {
   team: [s.log('team'), saveTeam],
   teamSaved: [teamTask.succeed()],
   error: [s.log('error')],
-  [batchTask.succeeded]: [s.log('batch')],
+  [batchTask.succeeded]: [markBatchDone, s.log('batch')],
   default: [s.log('unhandled result')]
 }
 

@@ -114,13 +114,15 @@ class Scraper {
         // see if our just completed task could trigger the handler
         let pat = new UrlPattern(`${task}(/*)`)
         let match = pat.match(taskName)
-        // if the handler's status is would activate the trigger...
-        if (match && status === triggerStatus && this.taskStatus(pat.stringify(match)) === triggerStatus) {
+        if (match) {
+          // if the handler's status is would activate the trigger...
           delete match._ // some extra match junk
-          this.sendEvent(Object.assign({
-            type: handler,
-            status: triggerStatus
-          }, match))
+          if (match && status === triggerStatus && this.taskStatus(pat.stringify(match)) === triggerStatus) {
+            this.sendEvent(Object.assign({
+              type: handler,
+              status: triggerStatus
+            }, match))
+          }
         }
       }
     }
