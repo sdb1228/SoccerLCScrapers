@@ -20,7 +20,7 @@ function fetchTeamUrls(startData) {
           url: Url.resolve(rootUrl, url),
           teamId: id,
           name: a.text,
-          facilityId: facilityId
+          facilityId: 2
         })
         }
       }
@@ -38,7 +38,7 @@ function fetchTeam(teamUrlData) {
       batchId: teamUrlData.batchId,
       name: name,
       teamId: teamUrlData.teamId,
-      facilityId: teamUrlData.facilityId,
+      facilityId: 2,
       division: division,
       season: season
     })
@@ -60,9 +60,9 @@ function fetchTeam(teamUrlData) {
       let event = {
         type: 'game',
         batchId: teamUrlData.batchId,
-        facilityId: teamUrlData.facilityId,
+        facilityId: 2,
         gameDateTime: new Date($(date).text()),
-        fieldId: $(field).text(),
+        field: $(field).text(),
         division: division,
         homeTeamId: resultFromTeamTD(homeTeam).id,
         awayTeamId: resultFromTeamTD(awayTeam).id,
@@ -79,7 +79,7 @@ function saveTeam(teamData) {
     name: teamData.name,
     batchId: teamData.batchId,
     teamId: teamData.teamId,
-    facilityId: teamData.facilityId,
+    facilityId: 2,
     division: teamData.division
   }).then((team) => {
     s.sendEvent({
@@ -92,26 +92,29 @@ function saveTeam(teamData) {
 }
 
 function saveGame(gameData) {
-  throw 'ohnoes'
-  db.Game.create({
-    batchId: gameData.batchId,
-    facilityId: gameData.facilityId,
-    // facilityGameId: gameData.facilityGameId,
-    // fieldId: gameData.fieldId, // todo: need fields in the db or make this a fieldName
-    //tournament: gameData.tournament, // todo: should be tournamentId?
-    gameDateTime: gameData.gameDateTime,
-    homeTeamId: gameData.homeTeamId,
-    // homeTeamScore: gameData.homeTeamScore, // todo: score from result
-    awayTeamId: gameData.awayTeamId
-    // awayTeamScore: gameData.awayTeamScore // todo: score from result
-  }).then((game) => {
-    s.sendEvent({
-      type: 'gameSaved',
-      id: game.id,
-      batchId: gameData.batchId,
-      gameId: gameData.gameId
-    })
-  }).catch((e) => s.sendEvent(s.exceptionResult(e, gameData))) // todo: error handling
+  db.Field
+    .findOrCreate({where: {name: gameData.field}})
+    .then(function(field, created) {
+      db.Game.create({
+        batchId: gameData.batchId,
+        facilityId: 2,
+        facilityGameId: gameData.facilityGameId,
+        fieldId: field[0].id,
+        tournament: gameData.tournament,
+        gameDateTime: gameData.gameDateTime,
+        homeTeamId: gameData.homeTeamId,
+        homeTeamScore: gameData.homeTeamScore,
+        awayTeamId: gameData.awayTeamId,
+        awayTeamScore: gameData.awayTeamScore
+      }).then((game) => {
+        s.sendEvent({
+          type: 'gameSaved',
+          id: game.id,
+          batchId: gameData.batchId,
+          gameId: gameData.gameId
+        })
+      })
+    }).catch((e) => s.sendEvent(s.exceptionResult(e, gameData))) // todo: error handling
 }
 
 function markBatchFailed(batchData) {
