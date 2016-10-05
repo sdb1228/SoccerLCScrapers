@@ -36,7 +36,7 @@ class Scraper {
   }
 
   constructor() {
-    this.requestLimiter = new RateLimiter(1, 'second')
+    this.requestLimiter = new RateLimiter(20, 'minute')
     this.tasks = {}
   }
 
@@ -123,7 +123,7 @@ class Scraper {
 
   taskDone(taskName, status) {
     this.tasks[taskName] = status
-    console.log(JSON.stringify({tasks: this.tasks}))
+    console.log(JSON.stringify({task: taskName, status: status}))
     for (let handler in this.handlers) {
       // if the handler is a task event...
       if (handler.includes('?')) {

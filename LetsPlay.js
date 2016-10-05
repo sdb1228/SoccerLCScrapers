@@ -13,7 +13,6 @@ function fetchTeamUrls(startData) {
     $.each($("a"), (_, a) => {
       if (a.href && (match = a.href.match(teamUrlRegex))) {
         const [url, facilityId, id] = match
-        if (id === '251815' || id === '249930') {
         s.sendEvent({
           type: 'teamUrl',
           batchId: startData.batchId,
@@ -22,7 +21,6 @@ function fetchTeamUrls(startData) {
           name: a.text,
           facilityId: 2
         })
-        }
       }
     })
   })
@@ -43,7 +41,11 @@ function fetchTeam(teamUrlData) {
       season: season
     })
     const gameTable = mainRight.find('table:first')
-
+    if (gameTable.find('th').text() !== 'Game TimeFieldHome TeamVisitor TeamScore') {
+      // we've got the wrong table. maybe no scheduled games?
+      // todo: emit warning
+      return
+    }
     const rows = gameTable.find('tr')
     function resultFromTeamTD(td) {
       let a = $(td).find('a')

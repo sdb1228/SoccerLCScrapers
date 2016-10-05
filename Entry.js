@@ -1,5 +1,8 @@
+const schedule = require('node-schedule')
 const LetsPlay = require('./LetsPlay')
 // const UtahSoccer = require('./UtahSoccer')
 
-LetsPlay.scrape()
+schedule.scheduleJob('0 0 */3 * * *', () => {
+  LetsPlay.scrape()
+})
 // UtahSoccer.scrape()
