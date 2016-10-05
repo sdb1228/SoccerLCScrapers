@@ -9,7 +9,6 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         Batch.hasMany(models.Game, {foreignKey: 'batchId'})
-        Batch.hasMany(models.Field, {foreignKey: 'batchId'})
       }
     }
   });
