@@ -40,9 +40,10 @@ class Scraper {
     this.tasks = {}
   }
 
-  exceptionResult(e, data={}) {
+  exceptionResult(e, event, data={}) {
     return {
       type: 'error',
+      event: event,
       exception: {message: e.message, stack: e.stack},
       data: data
     }
@@ -54,7 +55,7 @@ class Scraper {
     })
   }
 
-  scrape(url, func) {
+  scrape(event, url, func) {
     this.log('fetching')({url: url})
     this.get(url, (err, res) => {
       try {
@@ -66,23 +67,23 @@ class Scraper {
           try {
             func(window, $)
           } catch (e) {
-            this.sendEvent(this.exceptionResult(e, {url: url, html: window.$('html').html()}))
+            this.sendEvent(this.exceptionResult(e, event, {url: url, html: window.$('html').html()}))
           }
         })
       } catch (e) {
-        this.sendEvent(this.exceptionResult(e, {url: url}))
+        this.sendEvent(this.exceptionResult(e, event, {url: url}))
       }
     })
   }
 
-  rawScrape(url, func) {
+  rawScrape(event, url, func) {
    this.log('fetching')({url: url})
    this.get(url, (err, res) => {
      try {
        if (err) throw err
        func(res)
      } catch (e) {
-       this.sendEvent(this.exceptionResult(e, {url: url}))
+       this.sendEvent(this.exceptionResult(e, event, {url: url}))
      }
    })
  }
@@ -95,7 +96,7 @@ class Scraper {
         try {
           func(result)
         } catch (e) {
-          this.sendEvent(this.exceptionResult(e))
+          this.sendEvent(this.exceptionResult(e, result))
         }
       })
     })

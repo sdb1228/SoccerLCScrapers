@@ -9,7 +9,7 @@ let Scraper = require('./Scraper')
 let s = new Scraper()
 
 function fetchTeamUrls(startData) {
-  s.scrape(rootUrl + 'teams', (window, $) => {
+  s.scrape(startData, rootUrl + 'teams', (window, $) => {
     $.each($("a"), (_, a) => {
       if (a.href && (match = a.href.match(teamUrlRegex))) {
         const [url, facilityId, id] = match
@@ -29,7 +29,7 @@ function fetchTeamUrls(startData) {
 }
 
 function fetchTeam(teamUrlData) {
-  s.scrape(teamUrlData.url, (window, $) => {
+  s.scrape(teamUrlData, teamUrlData.url, (window, $) => {
     const mainRight = $('#mainright')
     const name = mainRight.find('h1:first').text()
     const [seasonDivision, season, division] = mainRight.find('h3:first').text().match(seasonDivisionRegex)
@@ -88,10 +88,11 @@ function saveTeam(teamData) {
       batchId: teamData.batchId,
       teamId: teamData.teamId
     })
-  }).catch((e) => s.sendEvent(s.exceptionResult(e))) // todo: error handling
+  }).catch((e) => s.sendEvent(s.exceptionResult(e, teamData))) // todo: error handling
 }
 
 function saveGame(gameData) {
+  throw 'ohnoes'
   db.Game.create({
     batchId: gameData.batchId,
     facilityId: gameData.facilityId,
@@ -110,17 +111,32 @@ function saveGame(gameData) {
       batchId: gameData.batchId,
       gameId: gameData.gameId
     })
-  }).catch((e) => s.sendEvent(s.exceptionResult(e))) // todo: error handling
+  }).catch((e) => s.sendEvent(s.exceptionResult(e, gameData))) // todo: error handling
 }
 
-function markBatchDone(batchSuccessData) {
-  db.Batch.update({status: 'complete'}, {where: {id: batchSuccessData.batchId}})
+function markBatchFailed(batchData) {
+  db.Batch.update({status: 'failed'}, {where: {id: batchData.batchId}})
+}
+
+function markBatchDone(batchData) {
+  db.Batch.update({status: 'complete'}, {where: {id: batchData.batchId}})
 }
 
 function createBatchAndRun(handlers) {
   db.Batch.create({status: 'pending'}).then((batch) => {
     s.runScraper(handlers, {batchId: batch.id})
   })
+}
+
+function maybeFailTask(task) {
+  let fail = task.fail()
+  return function maybeFailTask(eventData) {
+    try {
+      fail(eventData.event)
+    } catch(e) {
+      // don't care
+    }
+  }
 }
 
 const gameTask = s.newTask('batch/:batchId/game/:gameId')
@@ -139,8 +155,9 @@ const handlers = {
   teamSaved: [teamTask.succeed()],
   game: [gameTask.start(), s.log('game'), saveGame],
   gameSaved: [gameTask.succeed()],
-  error: [s.log('error')],
+  error: [s.log('error'), maybeFailTask(gameTask), maybeFailTask(teamTask), maybeFailTask(batchTask)],
   [batchTask.succeeded]: [markBatchDone, s.log('batch')],
+  [batchTask.failed]: [markBatchFailed, s.log('batch')],
   default: [s.log('unhandled result')]
 }
 

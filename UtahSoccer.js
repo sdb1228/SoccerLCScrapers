@@ -7,16 +7,8 @@ const fieldUrl = 'https://utahsoccer.org/uso_fields.php'
 const teamUrl = 'https://utahsoccer.org/public_get_my_team.php'
 const gameUrl = 'https://www.utahsoccer.org/public_manage_schedules_process.php?s=2015&l=&t=%20(All)&grid_id=list1&_search=false&nd=1460209489069&rows=5125&jqgrid_page=1&sidx=game_date%2C+game_number&sord=asc'
 
-function exceptionResult(e, data={}) {
-  return {
-    type: 'error',
-    exception: {message: e.message, stack: e.stack},
-    data: data
-  }
-}
-
 function fetchTeams(startData) {
-  s.scrape(teamUrl, (window, $) => {
+  s.scrape(startData, teamUrl, (window, $) => {
     const teams = $('option')
     for (let i = 0; i < teams.length; i++) {
       s.sendEvent({
@@ -32,7 +24,7 @@ function fetchTeams(startData) {
 }
 
 function fetchFields(startData) {
-  s.scrape(fieldUrl, (window, $) => {
+  s.scrape(startData, fieldUrl, (window, $) => {
     let fieldName = ""
     let fieldAddress = ""
     let extraElement = false
@@ -69,7 +61,7 @@ function fetchFields(startData) {
 }
 
 function fetchGames(startData) {
-  s.rawScrape(gameUrl, (response) => {
+  s.rawScrape(startData, gameUrl, (response) => {
     let json = JSON.parse(response.text)
     let games = json.rows
     for (let i = 0; i < games.length; i++) {
