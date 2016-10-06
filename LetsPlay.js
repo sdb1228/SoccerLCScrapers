@@ -124,8 +124,9 @@ function saveGame(gameData) {
 }
 
 function markBatchFailed(batchData) {
-  db.Batch.update({status: 'failed'}, {where: {id: batchData.batchId}})
-  slackFailure(`LetsPlay Batch ${batchData.batchId} FAILED`)
+  db.Batch.update({status: 'failed'}, {where: {id: batchData.batchId, status: {ne: 'failed'}}}).then((a) => {
+    if (a[0] > 0) slackFailure(`LetsPlay Batch ${batchData.batchId} FAILED`)
+  })
 }
 
 function markBatchDone(batchData) {
