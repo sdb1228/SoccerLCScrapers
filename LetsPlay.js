@@ -59,6 +59,7 @@ function fetchTeam(teamUrlData) {
       const tds = row.find('td').toArray()
       if (tds.length === 0) { continue } // th
       let [date, field, homeTeam, awayTeam, result] = tds
+      let [homeTeamScore, awayTeamScore] = $(result).text().split('-')
       let event = {
         type: 'game',
         batchId: teamUrlData.batchId,
@@ -68,7 +69,8 @@ function fetchTeam(teamUrlData) {
         division: division,
         homeTeamId: resultFromTeamTD(homeTeam).id,
         awayTeamId: resultFromTeamTD(awayTeam).id,
-        result: $(result).text()
+        homeTeamScore: parseInt(homeTeamScore) || null,
+        awayTeamScore: parseInt(awayTeamScore) || null
       }
       event.gameId = `${Math.floor(event.gameDateTime / 1000)}-${event.homeTeamId}-${event.awayTeamId}`
       s.sendEvent(event)
