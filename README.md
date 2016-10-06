@@ -52,6 +52,20 @@ and run any queries with normal sql.  Check the guide on more postgres stuff by 
 
 If you refuse to conform to the standard of docker ( I know I understand it can be frustrating sometimes)  Then what you will need to do is install node 6 and postgres.  Once both are installed you will need to create a postgres database server with the same configureation found in the docker-compose.yml/migrations.js.  In reality you should just plan on using docker but if you don't submit an issue and I can update the docs to accomadate your lack of motivation to move to a more standard way of life.
 
+### How to deploy
+
+To deploy to production you will need to set up the github live branch.  To do this add the remote like so:
+
+```
+git remote add live ssh://root@192.241.214.32/var/scraperRepo/scraper.git
+```
+
+from there you will actually deploy by running
+
+```
+git push live master
+```
+
    [dghy]: https://github.com/codekitchen/dinghy
    [pgweb]: https://www.postgresql.org/
    [df1]: https://www.docker.com/
