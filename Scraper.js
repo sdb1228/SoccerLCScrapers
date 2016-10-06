@@ -1,4 +1,4 @@
-const jsdom = require('node-jsdom')
+const cheerio = require('cheerio')
 const {RateLimiter} = require('limiter')
 const superagent = require('superagent')
 const UrlPattern = require('url-pattern')
@@ -60,16 +60,13 @@ class Scraper {
     this.get(url, (err, res) => {
       try {
         if (err) throw err
-        let doc = jsdom.jsdom(res.text, {url: url})
-        let window = doc.defaultView
-        jsdom.jQueryify(window, 'http://code.jquery.com/jquery.js', (window, $) => {
-          // jQueryify eats errors
-          try {
-            func(window, $)
-          } catch (e) {
-            this.sendEvent(this.exceptionResult(e, event, {url: url, html: window.$('html').html()}))
-          }
-        })
+        let $ = cheerio.load(res.text)
+        try {
+          func($)
+        } catch (e) {
+          this.sendEvent(this.exceptionResult(e, event, {url: url, html: $.html()}))
+        }
+        func = null
       } catch (e) {
         this.sendEvent(this.exceptionResult(e, event, {url: url}))
       }

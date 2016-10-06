@@ -11,28 +11,31 @@ const s = new Scraper()
 const {slackSuccess, slackFailure} = require('./Helpers.js')
 
 function fetchTeamUrls(startData) {
-  s.scrape(startData, rootUrl + 'teams', (window, $) => {
-    $.each($("a"), (_, a) => {
-      if (a.href && (match = a.href.match(teamUrlRegex))) {
+  s.scrape(startData, rootUrl + 'teams', ($) => {
+    let anchors = $("a")
+    for (let i = 0; i < anchors.length; i++) {
+      let a = $(anchors[i])
+      let href = a.attr('href')
+      if (href && (match = href.match(teamUrlRegex))) {
         const [url, facilityId, id] = match
         s.sendEvent({
           type: 'teamUrl',
           batchId: startData.batchId,
           url: Url.resolve(rootUrl, url),
           teamId: id,
-          name: a.text,
+          name: a.text(),
           facilityId: 2
         })
       }
-    })
+    }
   })
 }
 
 function fetchTeam(teamUrlData) {
-  s.scrape(teamUrlData, teamUrlData.url, (window, $) => {
+  s.scrape(teamUrlData, teamUrlData.url, ($) => {
     const mainRight = $('#mainright')
-    const name = mainRight.find('h1:first').text()
-    const [seasonDivision, season, division] = mainRight.find('h3:first').text().match(seasonDivisionRegex)
+    const name = mainRight.find('h1').first().text()
+    const [seasonDivision, season, division] = mainRight.find('h3').first().text().match(seasonDivisionRegex)
     s.sendEvent({
       type: 'team',
       batchId: teamUrlData.batchId,
@@ -42,7 +45,7 @@ function fetchTeam(teamUrlData) {
       division: division,
       season: season
     })
-    const gameTable = mainRight.find('table:first')
+    const gameTable = mainRight.find('table').first()
     if (gameTable.find('th').text() !== 'Game TimeFieldHome TeamVisitor TeamScore') {
       // we've got the wrong table. maybe no scheduled games?
       // todo: emit warning
