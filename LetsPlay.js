@@ -5,8 +5,10 @@ const teamUrlRegex = /.*\/facilities\/(\d+)\/teams\/(\d+)$/
 const seasonDivisionRegex = /^\s*Season:\s+(.*?)\s+Division:\s+(.*?)\s*$/
 const rootUrl = 'http://letsplaysoccer.com/facilities/12/' // todo: multi-facility
 
-let Scraper = require('./Scraper')
-let s = new Scraper()
+const Scraper = require('./Scraper')
+const s = new Scraper()
+
+const {slackSuccess, slackFailure} = require('./Helpers.js')
 
 function fetchTeamUrls(startData) {
   s.scrape(startData, rootUrl + 'teams', (window, $) => {
@@ -123,10 +125,12 @@ function saveGame(gameData) {
 
 function markBatchFailed(batchData) {
   db.Batch.update({status: 'failed'}, {where: {id: batchData.batchId}})
+  slackFailure(`LetsPlay Batch ${batchData.batchId} FAILED`)
 }
 
 function markBatchDone(batchData) {
   db.Batch.update({status: 'complete'}, {where: {id: batchData.batchId}})
+  slackSuccess(`LetsPlay Batch ${batchData.batchId} COMPLETE`)
 }
 
 function createBatchAndRun(handlers) {

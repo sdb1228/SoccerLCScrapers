@@ -1,6 +1,6 @@
 const log = require('custom-logger').config({ level: 0 })
 const Slack = require('node-slack')
-const slack = new Slack('https://hooks.slack.com/services/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')
+const slack = new Slack('https://hooks.slack.com/services/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')
 const Table = require('cli-table')
 
 const headerBreak = function headerBreak (text) {
