@@ -8,6 +8,7 @@ const rootUrl = 'http://letsplaysoccer.com/facilities/12/' // todo: multi-facili
 const Scraper = require('./Scraper')
 const s = new Scraper()
 
+const moment = require('moment')
 const {slackSuccess, slackFailure} = require('./Helpers.js')
 
 function fetchTeamUrls(startData) {
@@ -83,12 +84,13 @@ function fetchTeam(teamUrlData) {
   })
 }
 
+// todo: move these to a shared file
 function saveTeam(teamData) {
   db.Team.create({
     name: teamData.name,
     batchId: teamData.batchId,
     teamId: teamData.teamId,
-    facilityId: 2,
+    facilityId: teamData.facilityId,
     division: teamData.division
   }).then((team) => {
     s.sendEvent({
@@ -106,7 +108,7 @@ function saveGame(gameData) {
     .then(function(field, created) {
       db.Game.create({
         batchId: gameData.batchId,
-        facilityId: 2,
+        facilityId: gameData.facilityId,
         facilityGameId: gameData.facilityGameId,
         fieldId: field[0].id,
         tournament: gameData.tournament,
@@ -128,13 +130,20 @@ function saveGame(gameData) {
 
 function markBatchFailed(batchData) {
   db.Batch.update({status: 'failed'}, {where: {id: batchData.batchId, status: {ne: 'failed'}}}).then((a) => {
-    if (a[0] > 0) slackFailure(`LetsPlay Batch ${batchData.batchId} FAILED`)
+    if (a[0] > 0) {
+      db.Batch.findOne({id: batchData.batchId}).then((b) => {
+        slackFailure(`LetsPlay Batch ${batchData.batchId} FAILED in ${moment.duration(b.updatedAt - b.createdAt).humanize()}`)
+      })
+    }
   })
 }
 
 function markBatchDone(batchData) {
-  db.Batch.update({status: 'complete'}, {where: {id: batchData.batchId}})
-  slackSuccess(`LetsPlay Batch ${batchData.batchId} COMPLETE`)
+  db.Batch.update({status: 'complete'}, {where: {id: batchData.batchId}}).then(() => {
+    db.Batch.findOne({id: batchData.batchId}).then((b) => {
+      slackSuccess(`LetsPlay Batch ${batchData.batchId} COMPLETED in ${moment.duration(b.updatedAt - b.createdAt).humanize()}`)
+    })
+  })
 }
 
 function createBatchAndRun(handlers) {
