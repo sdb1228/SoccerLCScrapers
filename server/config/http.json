@@ -1,0 +1,16 @@
+{
+  "port": 1337,
+  "jwt": {
+    "active": false,
+    "expiration": "7d",
+    "exceptions": [],
+    "secret": "a3WfBHa3Z1hkJfPy8RyxmfC8w0bt7IZAtkpx0b2LVTjaOcAwBbRIg9RZqKvBfvMnalo0ioDTIwGIl3li"
+  },
+  "controllers": {
+    "autoroute": true,
+    "routes": {
+      "/login": "/auth/login",
+      "/status": "auth.status"
+    }
+  }
+}

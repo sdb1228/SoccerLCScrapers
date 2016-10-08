@@ -11,7 +11,9 @@ services:
       - soccerlcnet
 
   scrapers:
-    build: .
+    build:
+      context: .
+      dockerfile: scrapers.Dockerfile
     command: npm start
     environment:
       PGUSER: SoccerLC
@@ -22,6 +24,25 @@ services:
       - postgres
     networks:
       - default
+
+  server:
+    build:
+      context: .
+      dockerfile: server.Dockerfile
+    command: npm start
+    environment:
+      PGUSER: SoccerLC
+      PGPASSWORD: password
+      PGDATABASE: SoccerLC
+      PGHOST: postgres
+    tty: true
+    depends_on:
+      - postgres
+    links:
+      - postgres
+    networks:
+      - default
+
 
 # create this network manually with docker network create soccerlcnet
 networks:

@@ -1,0 +1,4 @@
+{
+	"environments": ["local", "dev",  "prod"],
+	"current_environment": "dev"
+}

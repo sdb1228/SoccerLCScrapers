@@ -1,0 +1,11 @@
+{
+  "name" : "soccerlc-server",
+  "scripts" : "index.js",
+  "exec_mode": "cluster_mode",
+  "instances": 1,
+	"log_date_format": "YYYY-MM-DD HH:mm Z",
+  "merge_logs": false,
+	"args": [ "--color" ],
+  "watch": ["app/", "lib/"],
+  "max_memory_restart": "150M"
+}

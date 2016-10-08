@@ -1,0 +1,14 @@
+{
+  "components": {
+    "active": [
+      "hooks",
+      "data",
+      "services",
+      "http",
+      "controllers"
+    ]
+  },
+  "log": {
+    "level": "trace"
+  }
+}

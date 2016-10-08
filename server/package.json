@@ -1,0 +1,16 @@
+{
+  "name": "soccer-backend",
+  "version": "1.0.0",
+  "description": "SoccerLC mobile backend",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "pm2": "pm2 start app.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "foxver": "git+https://github.com/felixmc/foxver.git",
+    "sequelize": "^3.24.3"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "apn": {
+  	"certificate": "data/certs/apn.pem",
+  	"key": "data/certs/apn.key"
+  },
+
+  "aws": {
+    "accessKeyId": "aKIAJXNKVYXV34D6YCDA",
+    "secretAccessKey": "ba3u6q9nSvI9dTLX1xF7v54io6wcvjyMrfq4CYi1",
+    "region": "us-east-1",
+    "s3": {
+      "bucket": "soccerlc-store"
+    }
+  }
+
+}

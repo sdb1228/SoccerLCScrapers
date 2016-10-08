@@ -1,0 +1,32 @@
+{
+  "name": "jsscrapers",
+  "version": "1.0.0",
+  "description": "Scrapers for all the local soccer facilities",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --max-old-space-size=256 Entry.js"
+  },
+  "author": "Steven Burnett",
+  "license": "ISC",
+  "devDependencies": {},
+  "dependencies": {
+    "axios": "^0.13.1",
+    "babel-eslint": "^6.1.2",
+    "cheerio": "^0.22.0",
+    "cli-table": "^0.3.1",
+    "custom-logger": "^0.3.1",
+    "eslint": "^3.3.1",
+    "eslint-config-standard": "^6.0.0-beta.3",
+    "eslint-plugin-promise": "^2.0.1",
+    "eslint-plugin-standard": "^2.0.0",
+    "limiter": "^1.1.0",
+    "moment": "^2.15.1",
+    "node-inspector": "^0.12.8",
+    "node-slack": "0.0.7",
+    "pg": "^6.0.3",
+    "sequelize": "^3.24.2",
+    "sequelize-cli": "^2.4.0",
+    "superagent": "^2.3.0",
+    "url-pattern": "^1.0.1"
+  }
+}

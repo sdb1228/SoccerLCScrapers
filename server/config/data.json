@@ -1,0 +1,17 @@
+{
+  "connections": {
+    "app-db": {
+      "provider": "sequelize",
+      "dialect" : "posgres",
+      "hostname": "postgres",
+      "database": "SoccerLC",
+      "username": "SoccerLC",
+      "password": "password"
+    }
+  },
+  "models": {
+    "user": {
+      "connection": "app-db"
+    }
+  }
+}
