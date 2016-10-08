@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "repl": "docker-compose run server npm run repl",
     "db:migrate": "docker-compose run --rm scrapers node_modules/.bin/sequelize db:migrate"
   },
   "repository": {
