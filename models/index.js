@@ -33,4 +33,12 @@ Object.keys(db).forEach(function(modelName) {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
+db.getLatestBatchForFacility = function(facilityId) {
+  return new Promise((resolve, reject) => {
+    db.Game.findOne({include: [{model: db.Batch, where: {status: 'complete'}}],
+                     where: {facilityId: facilityId},
+                     order: [[{model: db.Batch}, 'updatedAt', 'DESC']]}).then((game) => resolve(game.Batch)).catch(reject)
+  })
+}
+
 module.exports = db;
