@@ -27,12 +27,12 @@ const SequelizeProvider = {
   },
 
   modelsReadyHook: (sequelize, doneCallback) => {
-    sequelize.sync({ force: false })
-      .then(() => { /* Log.info('sequelize synced') */ doneCallback() })
-      .catch(err => {
-        Log.error('sequelize sync error', err)
-        doneCallback(err)
-      })
+    // sequelize.sync({ force: false })
+    //   .then(() => { /* Log.info('sequelize synced') */ doneCallback() })
+    //   .catch(err => {
+    //     Log.error('sequelize sync error', err)
+    //     doneCallback(err)
+    //   })
   },
 }
 

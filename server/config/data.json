@@ -2,7 +2,7 @@
   "connections": {
     "app-db": {
       "provider": "sequelize",
-      "dialect" : "posgres",
+      "dialect" : "postgres",
       "hostname": "postgres",
       "database": "SoccerLC",
       "username": "SoccerLC",
