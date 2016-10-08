@@ -5,7 +5,7 @@ module.exports = {
   provider: 'sequelize',
   multi: true,
   init: (sequelize) => {
-    return scraperModels.reduce(models, model => {
+    return scraperModels.reduce((models, model) => {
       models[model] = require(`./imports/${model}`)(sequelize, Sequelize.DataTypes)
       return models
     }, {})
