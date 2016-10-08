@@ -4,7 +4,10 @@ module.exports = () => ({
       res.ok('hello world')
     },
   },
-  'ping': (req, res) => {
-    res.ok({ msg: 'pong', time: Date.now() })
+  'teams': (req, res) => {
+    Models.Team.findAll()
+      .then(teams => {
+        res.ok(teams)
+      })
   },
 })
