@@ -156,7 +156,7 @@ function saveGame(gameData) {
 function markBatchFailed(batchData) {
   db.Batch.update({status: 'failed'}, {where: {id: batchData.batchId, status: {ne: 'failed'}}}).then((a) => {
     if (a[0] > 0) {
-      db.Batch.findOne({id: batchData.batchId}).then((b) => {
+      db.Batch.findOne({where: {id: batchData.batchId}}).then((b) => {
         slackFailure(`UtahSoccer Batch ${batchData.batchId} FAILED in ${moment.duration(b.updatedAt - b.createdAt).humanize()}`)
       })
     }
@@ -165,7 +165,7 @@ function markBatchFailed(batchData) {
 
 function markBatchDone(batchData) {
   db.Batch.update({status: 'complete'}, {where: {id: batchData.batchId}}).then(() => {
-    db.Batch.findOne({id: batchData.batchId}).then((b) => {
+    db.Batch.findOne({where: {id: batchData.batchId}}).then((b) => {
       slackSuccess(`UtahSoccer Batch ${batchData.batchId} COMPLETED in ${moment.duration(b.updatedAt - b.createdAt).humanize()}`)
     })
   })
