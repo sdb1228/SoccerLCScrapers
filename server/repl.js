@@ -16,5 +16,4 @@ require('foxver/server')(__dirname, {
   }
 })
 
-const index = require('./index')
 const r = repl.start('> ')
