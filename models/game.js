@@ -2,14 +2,17 @@
 module.exports = function(sequelize, DataTypes) {
   var Game = sequelize.define('Game', {
     batchId: DataTypes.INTEGER,
-    awayTeamId: DataTypes.INTEGER,
+    awayTeamId: {type: DataTypes.INTEGER,
+                 unqiue: 'gameCombo'},
     facilityGameId: DataTypes.STRING,
     facilityId: DataTypes.INTEGER,
-    homeTeamId: DataTypes.INTEGER,
+    homeTeamId: {type: DataTypes.INTEGER,
+                 unique: 'gameCombo'},
     awayTeamScore: DataTypes.INTEGER,
     homeTeamScore: DataTypes.INTEGER,
     deletedAt: DataTypes.DATE,
-    gameDateTime: DataTypes.DATE,
+    gameDateTime: {type: DataTypes.DATE,
+                   unqiue: 'gameCombo'},
     fieldId: DataTypes.INTEGER,
     tournament: DataTypes.INTEGER
   }, {

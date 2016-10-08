@@ -86,16 +86,15 @@ function fetchTeam(teamUrlData) {
 
 // todo: move these to a shared file
 function saveTeam(teamData) {
-  db.Team.create({
+  db.Team.upsert({
     name: teamData.name,
     batchId: teamData.batchId,
     teamId: teamData.teamId,
     facilityId: teamData.facilityId,
     division: teamData.division
-  }).then((team) => {
+  }).then(() => {
     s.sendEvent({
       type: 'teamSaved',
-      id: team.id,
       batchId: teamData.batchId,
       teamId: teamData.teamId
     })

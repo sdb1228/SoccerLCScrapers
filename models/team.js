@@ -2,8 +2,10 @@
 module.exports = function(sequelize, DataTypes) {
   var Team = sequelize.define('Team', {
     name: DataTypes.STRING,
-    batchId: DataTypes.INTEGER,
-    teamId: DataTypes.STRING,
+    batchId: {type: DataTypes.INTEGER,
+              unique: 'batchTeam'},
+    teamId: {type: DataTypes.STRING,
+             unique: 'batchTeam'},
     facilityId: DataTypes.INTEGER,
     division: DataTypes.STRING,
     deletedAt: DataTypes.DATE

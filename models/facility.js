@@ -1,7 +1,8 @@
 'use strict';
 module.exports = function(sequelize, DataTypes) {
   var Facility = sequelize.define('Facility', {
-    name: DataTypes.STRING,
+    name: {type: DataTypes.STRING,
+           unique: true},
     address: DataTypes.STRING,
     city: DataTypes.STRING,
     zip: DataTypes.INTEGER,
