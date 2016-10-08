@@ -57,8 +57,9 @@ function fetchGames(startData) {
         if (games[i].home_team_set === 'yes' && parseInt(games[i].home_team_id) > 0) {
           home_team_id = games[i].home_team_id
           s.sendEvent({
-            type: 'team',
+            type: 'gameTeam',
             batchId: startData.batchId,
+            gameId: games[i].game_id,
             teamId: games[i].home_team_id,
             name: games[i].home_team_name,
             division: division,
@@ -68,8 +69,9 @@ function fetchGames(startData) {
         if (games[i].away_team_set === 'yes' && parseInt(games[i].away_team_id) > 0) {
           away_team_id = games[i].away_team_id
           s.sendEvent({
-            type: 'team',
+            type: 'gameTeam',
             batchId: startData.batchId,
+            gameId: games[i].game_id,
             teamId: games[i].away_team_id,
             name: games[i].away_team_name,
             division: division,
@@ -118,11 +120,20 @@ function saveTeam(teamData) {
     facilityId: teamData.facilityId,
     division: teamData.division
   }).then(() => {
-    s.sendEvent({
-      type: 'teamSaved',
-      batchId: teamData.batchId,
-      teamId: teamData.teamId
-    })
+    if (teamData.gameId) {
+      s.sendEvent({
+        type: 'gameTeamSaved',
+        batchId: teamData.batchId,
+        gameId: teamData.gameId,
+        teamId: teamData.teamId
+      })
+    } else {
+      s.sendEvent({
+        type: 'teamSaved',
+        batchId: teamData.batchId,
+        teamId: teamData.teamId
+      })
+    }
   }).catch((e) => s.sendEvent(s.exceptionResult(e, teamData))) // todo: error handling
 }
 
@@ -188,27 +199,30 @@ function maybeFailTask(task) {
 }
 
 const teamTask = s.newTask('batch/:batchId/team/:teamId')
+const teamsTask = s.newTask('batch/:batchId/team')
 const batchTask = s.newTask('batch/:batchId')
 const fieldTask = s.newTask('batch/:batchId/field/:name')
 const fieldsTask = s.newTask('batch/:batchId/field')
 const gameTask = s.newTask('batch/:batchId/game/:gameId')
 const gamesTask = s.newTask('batch/:batchId/game')
+const gameTeamTask = s.newTask('batch/:batchId/game/:gameId/team/:teamId')
 
 const handlers = {
   start: [
     batchTask.start(),
-    fetchFields,
-//    fetchTeams,
-//    fetchGames,
+    fetchFields
   ],
-  field: [fieldTask.start(), s.log('field'), saveField],
+  field: [fieldTask.start(), saveField],
   fieldSaved: [fieldTask.succeed()],
-  [fieldsTask.succeeded]: [fetchGames],
-  game: [gameTask.start(), s.log('game'), saveGame],
+  [fieldsTask.succeeded]: [fetchTeams],
+  [teamsTask.succeeded]: [fetchGames],
+  game: [gameTask.start(), saveGame],
   gameSaved: [gameTask.succeed()],
   [gamesTask.succeeded]: [batchTask.succeed()],
-  team: [teamTask.start(), s.log('team'), saveTeam],
+  team: [teamTask.start(), saveTeam],
   teamSaved: [teamTask.succeed()],
+  gameTeam: [gameTeamTask.start(), saveTeam],
+  gameTeamSaved: [gameTeamTask.succeed()],
   error: [s.log('error'), maybeFailTask(fieldTask), maybeFailTask(gameTask)],
   [batchTask.succeeded]: [markBatchDone, s.log('batch')],
   [batchTask.failed]: [markBatchFailed, s.log('batch')],
