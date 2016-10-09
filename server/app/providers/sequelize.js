@@ -26,14 +26,14 @@ const SequelizeProvider = {
       })
   },
 
-  modelsReadyHook: (sequelize, doneCallback) => {
+  // modelsReadyHook: (sequelize, doneCallback) => {
     // sequelize.sync({ force: false })
     //   .then(() => { /* Log.info('sequelize synced') */ doneCallback() })
     //   .catch(err => {
     //     Log.error('sequelize sync error', err)
     //     doneCallback(err)
     //   })
-  },
+  // },
 }
 
 module.exports = SequelizeProvider
