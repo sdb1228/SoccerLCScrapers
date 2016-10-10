@@ -13,7 +13,8 @@ module.exports = {
         unique: 'gameCombo'
       },
       facilityId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        unique: 'gameCombo'
       },
       facilityGameId: {
         type: Sequelize.STRING,
@@ -36,7 +37,8 @@ module.exports = {
         unique: 'gameCombo'
       },
       fieldId: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        unique: 'gameCombo'
       },
       tournament: {
         type: Sequelize.INTEGER

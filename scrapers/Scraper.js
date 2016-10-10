@@ -18,13 +18,19 @@ class Scraper {
     this.loaders = []
     this.scrapeResults = {}
     this.initialUrl = null
+    this.initialUrls = []
   }
 
   run() {
     return async (function run() {
       const scrapeStartTime = new Date()
       try {
-        await(this.get(this.initialUrl))
+        if (this.initialUrl) {
+          await(this.get(this.initialUrl))
+        }
+        for (let i = 0; i < this.initialUrls.length; i++) {
+          await(this.get(this.initialUrls[i]))
+        }
         slackSuccess(`${this.name} SCRAPED in ${moment.duration(new Date() - scrapeStartTime).humanize()}`)
         const loadStartTime = new Date()
         try {
@@ -77,9 +83,10 @@ class Scraper {
           promises.push(this.save(json))
         }.bind(this)
       }
+      const [path, params] = url.split('?')
       for (let i = 0; i < this.extractors.length; i++) {
         const extractor = this.extractors[i]
-        const match = extractor.pattern.match(url)
+        const match = extractor.pattern.match(path)
         if (match) {
           anyMatch = true
           jsonLog({extract: {url: url, extractor: {pattern: extractor.patternString, extractor: extractor.cb.name, opts: extractor.opts || undefined}}})
@@ -90,7 +97,7 @@ class Scraper {
         }
       }
       if (!anyMatch) {
-        jsonLog({warning: {message: 'no extractor for url', url: url}})
+        jsonLog({warning: {message: 'no extractor for url', url: path}})
       }
       return Promise.all(promises)
     } catch (e) {

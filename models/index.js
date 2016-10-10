@@ -51,9 +51,17 @@ db.findOrCreateTeamByTeamId = async((teamId, defaults) => {
   // todo: maybe update division
 })
 
-db.upsertGame = async((gameData) => {
-  jsonLog({upsertGame: gameData})
-  return await(db.Game.upsert(gameData))
+db.findOrCreateGame = async((gameData) => {
+  jsonLog({findOrCreateGame: gameData})
+  return await(db.Game.findOrCreate({where: gameData}))
+})
+
+db.findOrCreateFieldAndTeamIds = async((fieldName, homeTeamId, awayTeamId) => {
+  let fieldId, homeTeamDbId, awayTeamDbId
+  if (fieldName) { fieldId = await(db.findOrCreateFieldByName(fieldName))[0].id }
+  if (homeTeamId) { homeTeamDbId = await(db.findOrCreateTeamByTeamId(homeTeamId))[0].id }
+  if (awayTeamId) { awayTeamDbId = await(db.findOrCreateTeamByTeamId(awayTeamId))[0].id }
+  return [fieldId, homeTeamDbId, awayTeamDbId]
 })
 
 module.exports = db;

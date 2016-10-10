@@ -4,7 +4,8 @@ module.exports = function(sequelize, DataTypes) {
     awayTeamId: {type: DataTypes.INTEGER,
                  unique: 'gameCombo'},
     facilityGameId: DataTypes.STRING,
-    facilityId: DataTypes.INTEGER,
+    facilityId: {type: DataTypes.INTEGER,
+                 unique: 'gameCombo'},
     homeTeamId: {type: DataTypes.INTEGER,
                  unique: 'gameCombo'},
     awayTeamScore: DataTypes.INTEGER,
@@ -12,7 +13,8 @@ module.exports = function(sequelize, DataTypes) {
     deletedAt: DataTypes.DATE,
     gameDateTime: {type: DataTypes.DATE,
                    unique: 'gameCombo'},
-    fieldId: DataTypes.INTEGER,
+    fieldId: {type: DataTypes.INTEGER,
+              unique: 'gameCombo'},
     tournament: DataTypes.INTEGER
   }, {
     classMethods: {

@@ -77,7 +77,6 @@ s.domExtractor(facilityPattern + '/teams/:teamId', function extractTeam(req, res
 
 // we don't fetch fields currently
 /* s.loader(async (function saveFields(scraped) {
-  // fields
   for (let i = 0; i < scraped.fields.length; i++) {
     const field = scraped.fields[i]
     await (db.findOrCreateFieldByName(field.name, field))
@@ -85,7 +84,6 @@ s.domExtractor(facilityPattern + '/teams/:teamId', function extractTeam(req, res
 })) */
 
 s.loader(async (function saveTeams(scraped) {
-  // teams
   for (let i = 0; i < scraped.teams.length; i++) {
     const team = scraped.teams[i]
     await (db.findOrCreateTeamByTeamId(team.teamId, team))
@@ -93,23 +91,28 @@ s.loader(async (function saveTeams(scraped) {
 }))
 
 s.loader(async (function saveGames(scraped) {
-  // games
-  for (let i = 0; i < scraped.games.length; i++) {
-    // todo: reschedule detection, dedupe
-    const game = scraped.games[i]
-    const [field] = await (db.findOrCreateFieldByName(game.field))
-    const [homeTeam] = await (db.findOrCreateTeamByTeamId(game.homeTeamId))
-    const [awayTeam] = await (db.findOrCreateTeamByTeamId(game.awayTeamId))
-    // todo: handle reschedules
-    await (db.upsertGame({
-      facilityId: scraped.facilityId,
-      fieldId: field.id,
-      gameDateTime: new Date(game.gameDateTime),
-      homeTeamId: homeTeam.id,
-      awayTeamId: awayTeam.id,
-      homeTeamScore: game.homeTeamScore,
-      awayTeamScore: game.awayTeamScore
-    }))
+  const t = await (db.sequelize.transaction())
+  try {
+    db.Game.destroy({where: {facilityId: scraped.facilityId}, transaction: t})
+    for (let i = 0; i < scraped.games.length; i++) {
+      const game = scraped.games[i]
+      const [fieldId, homeTeamId, awayTeamId] = await (db.findOrCreateFieldAndTeamIds(game.field, game.homeTeamId, game.awayTeamId))
+      // todo: handle reschedules
+      const [dbGame] = await (db.Game.findOrCreate({
+        where: {
+          facilityId: scraped.facilityId,
+          fieldId: fieldId,
+          gameDateTime: new Date(game.gameDateTime),
+          homeTeamId: homeTeamId,
+          awayTeamId: awayTeamId
+        }, transaction: t}))
+      if (!dbGame.homeTeamScore && game.homeTeamScore) { dbGame.homeTeamScore = game.homeTeamScore }
+      if (!dbGame.awayTeamScore && game.awayTeamScore) { dbGame.awayTeamScore = game.awayTeamScore }
+      await (dbGame.save({transaction: t}))
+    }
+    t.commit()
+  } catch (e) {
+    t.rollback()
   }
 }))
 
