@@ -8,14 +8,6 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      batchId: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'Batches',
-          key: 'id'
-        }
-      },
       awayTeamId: {
         type: Sequelize.INTEGER,
         unique: 'gameCombo'

@@ -8,21 +8,12 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      batchId: {
-        allowNull: false,
-        type: Sequelize.INTEGER,
-        unique: 'batchTeam',
-        references: {
-          model: 'Batches',
-          key: 'id'
-        }
-      },
       name: {
         type: Sequelize.STRING
       },
       teamId: {
         type: Sequelize.STRING,
-        unique: 'batchTeam'
+        unique: true
       },
       division: {
         type: Sequelize.STRING

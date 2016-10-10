@@ -1,4 +1,6 @@
 'use strict';
+const async = require('asyncawait/async')
+const await = require('asyncawait/await')
 
 var fs        = require('fs');
 var path      = require('path');
@@ -33,12 +35,25 @@ Object.keys(db).forEach(function(modelName) {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-db.getLatestBatchForFacility = function(facilityId) {
-  return new Promise((resolve, reject) => {
-    db.Game.findOne({include: [{model: db.Batch, where: {status: 'complete'}}],
-                     where: {facilityId: facilityId},
-                     order: [[{model: db.Batch}, 'updatedAt', 'DESC']]}).then((game) => resolve(game.Batch)).catch(reject)
-  })
-}
+function jsonLog(obj) { console.log(JSON.stringify(obj, null, 2)) }
+
+db.findOrCreateFieldByName = async((name, defaults) => {
+  jsonLog({findOrCreateFieldByName: {name: name, defaults: defaults}})
+  return await(db.Field.findOrCreate({where: {name: {$iLike: name}}, defaults: defaults || {name: name}}))
+  // todo: maybe update address
+  // todo: maybe fuzzy match name
+  // tood: maybe add field name aliases
+})
+
+db.findOrCreateTeamByTeamId = async((teamId, defaults) => {
+  jsonLog({findOrCreateTeamByTeamId: {teamId: teamId, defaults: defaults}})
+  return await(db.Team.findOrCreate({where: {teamId: teamId}, defaults: defaults}))
+  // todo: maybe update division
+})
+
+db.upsertGame = async((gameData) => {
+  jsonLog({upsertGame: gameData})
+  return await(db.Game.upsert(gameData))
+})
 
 module.exports = db;

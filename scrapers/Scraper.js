@@ -2,166 +2,125 @@ const cheerio = require('cheerio')
 const {RateLimiter} = require('limiter')
 const superagent = require('superagent')
 const UrlPattern = require('url-pattern')
+const async = require('asyncawait/async')
+const await = require('asyncawait/await')
+const inflection = require('inflection')
+const moment = require('moment')
+const {slackSuccess, slackFailure} = require('./Helpers.js')
 
-class Task extends UrlPattern {
-  constructor(scraper, taskName) {
-    super(taskName)
-    this.succeeded = `${taskName}?succeeded`
-    this.failed = `${taskName}?failed`
-    this.scraper = scraper
-  }
-
-  start() {
-    return function start(eventData) {
-      this.scraper.taskPending(this.stringify(eventData))
-    }.bind(this)
-  }
-
-  succeed() {
-    return function succeed(eventData) {
-      this.scraper.taskSucceeded(this.stringify(eventData))
-    }.bind(this)
-  }
-
-  fail() {
-    return function fail(eventData) {
-      this.scraper.taskFailed(this.stringify(eventData))
-    }.bind(this)
-  }
-}
+function jsonLog(obj) { console.log(JSON.stringify(obj, null, 2)) }
 
 class Scraper {
-  log(message) {
-    return function log(r) {console.log(JSON.stringify({message: message, data: r}))}
-  }
-
-  constructor() {
+  constructor(name) {
+    this.name = name
     this.requestLimiter = new RateLimiter(20, 'minute')
-    this.tasks = {}
+    this.extractors = []
+    this.loaders = []
+    this.scrapeResults = {}
+    this.initialUrl = null
   }
 
-  exceptionResult(e, event, data={}) {
-    return {
-      type: 'error',
-      event: event,
-      exception: {message: e.message, stack: e.stack},
-      data: data
-    }
-  }
-
-  get(url, cb) {
-    this.requestLimiter.removeTokens(1, () => {
-      superagent.get(url).end(cb)
-    })
-  }
-
-  scrape(event, url, func) {
-    this.log('fetching')({url: url})
-    this.get(url, (err, res) => {
+  run() {
+    return async (function run() {
+      const scrapeStartTime = new Date()
       try {
-        if (err) throw err
-        let $ = cheerio.load(res.text)
+        await(this.get(this.initialUrl))
+        slackSuccess(`${this.name} SCRAPED in ${moment.duration(new Date() - scrapeStartTime).humanize()}`)
+        const loadStartTime = new Date()
         try {
-          func($)
+          await(this.load(this.scrapeResults))
+          slackSuccess(`${this.name} LOADED in ${moment.duration(new Date() - loadStartTime).humanize()}`)
         } catch (e) {
-          this.sendEvent(this.exceptionResult(e, event, {url: url, html: $.html()}))
+          console.log(e)
+          slackFailure(`${this.name} LOAD FAILED in ${moment.duration(new Date() - loadStartTime).humanize()}`, e)
         }
-        func = null
       } catch (e) {
-        this.sendEvent(this.exceptionResult(e, event, {url: url}))
+        console.log(e)
+        slackFailure(`${this.name} SCRAPE FAILED in ${moment.duration(new Date() - scrapeStartTime).humanize()}`, e)
       }
-    })
+    }.bind(this))()
   }
 
-  rawScrape(event, url, func) {
-   this.log('fetching')({url: url})
-   this.get(url, (err, res) => {
-     try {
-       if (err) throw err
-       func(res)
-     } catch (e) {
-       this.sendEvent(this.exceptionResult(e, event, {url: url}))
-     }
-   })
- }
-
-  sendEvent(result) {
-    console.log(JSON.stringify({event: result}))
-    let funcs = this.handlers[result.type] || this.handlers.default
-    funcs.forEach((func) => {
-      setImmediate(() => {
-        try {
-          func(result)
-        } catch (e) {
-          this.sendEvent(this.exceptionResult(e, result))
-        }
+  get(url) {
+    return new Promise((resolve, reject) => {
+      this.requestLimiter.removeTokens(1, () => {
+        jsonLog({get: {url: url}})
+        superagent.get(url).end((err, res) => {
+          if (err) {reject(err)}
+          this.extract(url, res).then(resolve).catch(reject)
+        })
       })
     })
   }
 
-  runScraper(hs, startOpts = {}){
-    this.handlers = hs
-    this.sendEvent(Object.assign({type: 'start'}, startOpts))
+  save(json) {
+    // todo: maybe persist this to a db
+    return new Promise((resolve, reject) => {
+      const trimmed = JSON.parse(JSON.stringify(json).replace(/"\s+|\s+"/g,'"'))
+      jsonLog({save: trimmed})
+      const key = inflection.pluralize(trimmed.type)
+      if (!this.scrapeResults[key]) { this.scrapeResults[key] = [] }
+      this.scrapeResults[key].push(trimmed)
+      resolve()
+    })
   }
 
-
-  taskStatus(taskName) {
-    let statuses = []
-    for (let key in this.tasks) {
-      if (key.startsWith(taskName)) {
-        statuses.push(this.tasks[key])
+  extract(url, res) {
+    try {
+      let promises = []
+      let anyMatch = false
+      const extractorRes = {
+        get: function(url) {
+          promises.push(this.get(url))
+        }.bind(this),
+        save: function(json) {
+          promises.push(this.save(json))
+        }.bind(this)
       }
-    }
-    if (statuses.length === 0) return 'pending'
-    if (statuses.some((s) => s === 'failed')) return 'failed'
-    if (statuses.some((s) => s === 'pending')) return 'pending'
-    return 'succeeded'
-  }
-
-  taskDone(taskName, status) {
-    this.tasks[taskName] = status
-    console.log(JSON.stringify({task: taskName, status: status}))
-    for (let handler in this.handlers) {
-      // if the handler is a task event...
-      if (handler.includes('?')) {
-        // get the task and status to trigger on
-        let [task, triggerStatus] = handler.split('?')
-        // see if our just completed task could trigger the handler
-        let pat = new UrlPattern(`${task}(/*)`)
-        let match = pat.match(taskName)
+      for (let i = 0; i < this.extractors.length; i++) {
+        const extractor = this.extractors[i]
+        const match = extractor.pattern.match(url)
         if (match) {
-          // if the handler's status is would activate the trigger...
-          delete match._ // some extra match junk
-          if (match && status === triggerStatus && this.taskStatus(pat.stringify(match)) === triggerStatus) {
-            this.sendEvent(Object.assign({
-              type: handler,
-              status: triggerStatus
-            }, match))
-          }
+          anyMatch = true
+          jsonLog({extract: {url: url, extractor: {pattern: extractor.patternString, extractor: extractor.cb.name, opts: extractor.opts || undefined}}})
+          let req = {params: match}
+          if (extractor.opts.parseDom) { req.$ = cheerio.load(res.text) }
+          if (extractor.opts.jsonBody) { req.body = JSON.parse(res.text) }
+          extractor.cb(req, extractorRes)
         }
       }
+      if (!anyMatch) {
+        jsonLog({warning: {message: 'no extractor for url', url: url}})
+      }
+      return Promise.all(promises)
+    } catch (e) {
+      return Promise.reject(e)
     }
   }
 
-  newTask(taskName) {
-    return new Task(this, taskName)
+  load() {
+    return async (function load() {
+      for (let i = 0; i < this.loaders.length; i++) {
+        const loader = this.loaders[i]
+        // jsonLog({load: {loader: loader.name}}) // asyncawait eats function names so this is useless
+        await (loader(this.scrapeResults))
+      }}.bind(this))()
   }
 
-  taskPending(taskName) {
-    // should this leave existing values?
-    this.tasks[taskName] = 'pending'
+  domExtractor(pattern, cb) {
+    this.rawExtractor(pattern, cb, {parseDom: true})
   }
 
-  // if all sub tasks are successful, emit parent task success events
-  taskSucceeded(taskName) {
-    // should this overwrite failure?
-    this.taskDone(taskName, 'succeeded')
+  jsonExtractor(pattern, cb) {
+    this.rawExtractor(pattern, cb, {jsonBody: true})
   }
 
-  // if any sub task is failed, emit parent task failure events
-  taskFailed(taskName) {
-    // should this overwrite success?
-    this.taskDone(taskName, 'failed')
+  rawExtractor(pattern, cb, opts) {
+    this.extractors.push({patternString: pattern, pattern: new UrlPattern(pattern), cb: cb, opts: opts})
+  }
+
+  loader(cb) {
+    this.loaders.push(cb)
   }
 }
 

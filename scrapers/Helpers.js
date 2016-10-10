@@ -2,6 +2,8 @@ const log = require('custom-logger').config({ level: 0 })
 const Slack = require('node-slack')
 const slack = new Slack('https://hooks.slack.com/services/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')
 const Table = require('cli-table')
+const PrettyError = require('pretty-error')
+const prettyError = new PrettyError()
 
 const headerBreak = function headerBreak (text) {
   console.log('\n')
@@ -25,19 +27,27 @@ const minorErrorHeader = function minorErrorHeader (text) {
 }
 
 const slackSuccess = function slackSuccess (text) {
-  slack.send({
-    text: text,
-    channel: '#scrapers',
-    username: 'Scraper Bot',
-  })
+  if (process.env.NODE_ENV === 'production') {
+    slack.send({
+      text: text,
+      channel: '#scrapers',
+      username: 'Scraper Bot',
+    })
+  } else {
+    console.log(text)
+  }
 }
 
-const slackFailure = function slackFailure (text) {
-  slack.send({
-    text: '<!channel> ' + text,
+const slackFailure = function slackFailure (text, e) {
+  if (process.env.NODE_ENV) {
+    slack.send({
+      text: '<!channel> ' + text + "\n" + prettyError.render(e),
     channel: '#scrapers',
-    username: 'Scraper Bot',
-  })
+      username: 'Scraper Bot',
+    })
+  } else {
+    console.log(text + "\n" + prettyError.render(e))
+  }
 }
 
 const printTeamRow = function printTeamRow (teamId, teamName, division = '') {
