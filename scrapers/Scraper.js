@@ -6,14 +6,14 @@ const async = require('asyncawait/async')
 const await = require('asyncawait/await')
 const inflection = require('inflection')
 const moment = require('moment')
-const {slackSuccess, slackFailure} = require('./Helpers.js')
+const {slackStatus, slackSuccess, slackFailure} = require('./Helpers.js')
 
 function jsonLog(obj) { console.log(JSON.stringify(obj, null, 2)) }
 
 class Scraper {
-  constructor(name) {
+  constructor(name, opts={}) {
     this.name = name
-    this.requestLimiter = new RateLimiter(20, 'minute')
+    this.requestLimiter = new RateLimiter(...(opts.rateLimit || [20, 'minute']))
     this.extractors = []
     this.loaders = []
     this.scrapeResults = {}
@@ -25,6 +25,7 @@ class Scraper {
     return async (function run() {
       const scrapeStartTime = new Date()
       try {
+        slackStatus(`${this.name} STARTED`)
         if (this.initialUrl) {
           await(this.get(this.initialUrl))
         }
@@ -90,17 +91,19 @@ class Scraper {
         if (match) {
           anyMatch = true
           jsonLog({extract: {url: url, extractor: {pattern: extractor.patternString, extractor: extractor.cb.name, opts: extractor.opts || undefined}}})
-          let req = {params: match}
+          let req = {url: url, params: match}
           if (extractor.opts.parseDom) { req.$ = cheerio.load(res.text) }
           if (extractor.opts.jsonBody) { req.body = JSON.parse(res.text) }
           extractor.cb(req, extractorRes)
         }
       }
       if (!anyMatch) {
-        jsonLog({warning: {message: 'no extractor for url', url: path}})
+        jsonLog({error: {message: 'no extractor for url', url: path}})
+        throw {message: 'no extractor for url', url: path}
       }
       return Promise.all(promises)
     } catch (e) {
+      e.url = url
       return Promise.reject(e)
     }
   }
@@ -123,7 +126,7 @@ class Scraper {
   }
 
   rawExtractor(pattern, cb, opts) {
-    this.extractors.push({patternString: pattern, pattern: new UrlPattern(pattern), cb: cb, opts: opts})
+    this.extractors.push({patternString: pattern, pattern: new UrlPattern('(http(s)\\://)(www.)' + pattern), cb: cb, opts: opts})
   }
 
   loader(cb) {

@@ -11,7 +11,7 @@ const s = new Scraper('LetsPlay')
 const moment = require('moment')
 const {slackSuccess, slackFailure} = require('./Helpers.js')
 
-const rootPattern = '(http(s)\\://)(www.)letsplaysoccer.com'
+const rootPattern = 'letsplaysoccer.com'
 const facilityPattern = rootPattern + '/facilities/:facilityId'
 
 const async = require('asyncawait/async')

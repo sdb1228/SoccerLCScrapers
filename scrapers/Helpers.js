@@ -26,6 +26,18 @@ const minorErrorHeader = function minorErrorHeader (text) {
   console.log('\n')
 }
 
+const slackStatus = function slackStatus (text) {
+  if (process.env.NODE_ENV === 'production') {
+    slack.send({
+      text: text,
+      channel: '#scrapers',
+      username: 'Scraper Bot',
+    })
+  } else {
+    console.log(text)
+  }
+}
+
 const slackSuccess = function slackSuccess (text) {
   if (process.env.NODE_ENV === 'production') {
     slack.send({
@@ -96,6 +108,7 @@ module.exports = {
   printTeamRow,
   slackFailure,
   slackSuccess,
+  slackStatus,
   minorErrorHeader,
   minorHeader,
   headerBreak,

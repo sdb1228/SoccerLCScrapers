@@ -7,7 +7,7 @@ const await = require('asyncawait/await')
 let Scraper = require('./Scraper')
 let s = new Scraper('UtahSoccer')
 
-const rootPattern = '(http(s)\\://)(www.)utahsoccer.org'
+const rootPattern = 'utahsoccer.org'
 const rootUrl = 'https://utahsoccer.org'
 const fieldPath = '/uso_fields.php'
 const teamPath = '/public_get_my_team.php'
