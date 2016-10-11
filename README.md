@@ -69,3 +69,58 @@ git push live master
    [dghy]: https://github.com/codekitchen/dinghy
    [pgweb]: https://www.postgresql.org/
    [df1]: https://www.docker.com/
+
+## Team Updating
+
+We always have a teamId and facilityId. Sometimes we also have a team name and division. Currently the teamId is the only thing that really matters. Null DB values are always set from non-null scraped values. Conflicting division might need to be reported for human review and does need to be set to the most recent value scraped (note: _not_ neccessarily the most recently scraped value. gameDateTime might need to be checked). Conflicting teamName is reported for human review.
+
+## Field Updating
+
+We always have a fieldName. Sometimes we also have address data. Null DB values are always set from non-null scraped values. Conflicting address data is reported for human review. We'll need field name aliases at some point I'm sure.
+
+## Game Updating
+
+There isn't a foolproof way to know which game is which between scrapes. We need to know that so that we can associate data (e.g. comments, notifications) to them. Here is how we determine how to update our game db.
+
+Every scraped game needs to be matched with exactly one DB game. The DB game can be new or preexisting.
+
+We try to minimize changed DB games. If an ambiguity arises where we could have two slightly different games or one identical game and one significantly changed game, we prefer to have one identical game.
+
+Data is "null" when the scraped data and the DB data are both null.
+
+Data is "identical" or "same" when the scraped data equals the DB data, null or not.
+
+Data is "conflicting" when the scraped data is different from the DB data and both are non-null.
+
+Data is "erased" when the scraped data is null and the DB data is non-null.
+
+Data is "set" when the scraped data is non-null and the DB data is null.
+
+"Swappable" is used when the home and away team can be swapped and still be considered identical. Scores must be swapped also.
+
+What do we do if we have a DB game with teams, another with fieldtime, and a scraped with both? Merge them?
+
+Should we be picky with the data we import? Just ignore games with scores without teams and such?
+
+### Checks
+These checks proceed in order, i.e. all games are checked for identical versions, then all are checked for scoring. Once a scraped game has been matched to a DB game, both are removed from consideration for further checks.
+
+Invalid: Null scraped field, time, and teams.
+Invalid: Non-null score for null team.
+Obviously Valid: Non-null field, time, teams, no scores.
+Obviously Valid and Complete: Non-null field, time, teams, scores.
+
+Identical: Same field, time, home team, away team, and scores.
+Scored: Same field, time, home team, away team. Set or Identical scores.
+Score Update: Same field, time, home team, away team. Conflicting scores.
+Team Set: Same field, time. No scores. Set or Identical teams.
+(maybe new game)Team Change: Same field, time, home or away team. No scores. Other team conflicting.
+(Unscored is probably a new game, not unscoring an existing game. This check is considered later.)
+Some combinations to think about: Scored and Team Set, Score Update and Team Change.
+Scheduled: Same teams (swappable). No scores. Non-conflicting non-null scraped field and/or time.
+Reschedule: Same teams (swappable). No scores. Conflicting field and/or time. (should time be similar? Partial Unschedule when only one conflicts?)
+Unscheduled: Same teams (swappable). No scores. Erased field and time.
+Archived: Unmatched DB games. Non-null field, time, teams, scores.
+Cancelled: Unmatched DB games. Non-null field and/or time.
+Silent Delete: Unmatched DB games. Null field and time.
+New Game: Unmatched scraped game.
