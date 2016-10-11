@@ -6,9 +6,6 @@ services:
       POSTGRES_USER: SoccerLC
       POSTGRES_PASSWORD: password
       POSTGRES_DB: SoccerLC
-    networks:
-      - default
-      - soccerlcnet
 
   scrapers:
     build:
@@ -22,8 +19,6 @@ services:
       PGHOST: postgres
     links:
       - postgres
-    networks:
-      - default
 
   server:
     build:
@@ -35,16 +30,9 @@ services:
       PGPASSWORD: password
       PGDATABASE: SoccerLC
       PGHOST: postgres
+      VIRTUAL_HOST: soccerlc.docker
     tty: true
     depends_on:
       - postgres
     links:
       - postgres
-    networks:
-      - default
-
-
-# create this network manually with docker network create soccerlcnet
-networks:
-  soccerlcnet:
-    external: true

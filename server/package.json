@@ -11,6 +11,7 @@
   },
   "license": "ISC",
   "dependencies": {
+    "asyncawait": "^1.0.6",
     "foxver": "git+https://github.com/felixmc/foxver.git",
     "pg": "^6.1.0",
     "sequelize": "^3.24.3"
