@@ -86,7 +86,12 @@ s.domExtractor(facilityPattern + '/teams/:teamId', function extractTeam(req, res
 s.loader(async (function saveTeams(scraped) {
   for (let i = 0; i < scraped.teams.length; i++) {
     const team = scraped.teams[i]
-    await (db.findOrCreateTeamByTeamId(team.teamId, team))
+    team.facilityId = scraped.facilityId
+    // todo: upsert?
+    let [dbTeam] = await (db.findOrCreateTeamByTeamId(team.teamId, team))
+    if (!dbTeam.facilityId) { dbTeam.facilityId = team.facilityId }
+    if (!dbTeam.name) { dbTeam.name = team.name}
+    await(dbTeam.save())
   }
 }))
 

@@ -95,10 +95,13 @@ s.loader(async (function saveFields(scraped) {
 s.loader(async (function saveTeams(scraped) {
   for (let i = 0; i < scraped.teams.length; i++) {
     const team = scraped.teams[i]
+    team.facilityId = scraped.facilityId
+    // todo: upsert?
     const [dbTeam] = await (db.findOrCreateTeamByTeamId(team.teamId, team))
-    if (!dbTeam.division && team.division) {
-      await (dbTeam.update({division: team.division}))
-    }
+    if (!dbTeam.facilityId) { dbTeam.facilityId = scraped.facilityId }
+    if (!dbTeam.name) { dbTeam.name = team.name}
+    if (!dbTeam.division) { dbTeam.division = team.division }
+    await(dbTeam.save())
   }
 }))
 
