@@ -13,6 +13,7 @@
     "asyncawait": "^1.0.6",
     "axios": "^0.13.1",
     "babel-eslint": "^6.1.2",
+    "bluebird": "^3.4.6",
     "cheerio": "^0.22.0",
     "cli-table": "^0.3.1",
     "custom-logger": "^0.3.1",
