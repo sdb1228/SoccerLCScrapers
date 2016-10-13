@@ -7,6 +7,8 @@ const prettyError = new PrettyError()
 if (process.env.NODE_ENV === 'production') {
   prettyError.withoutColors()
 }
+const channel = '#scrapers_noisy'
+const botUsername = 'Scraper Bot'
 
 const headerBreak = function headerBreak (text) {
   console.log('\n')
@@ -29,12 +31,27 @@ const minorErrorHeader = function minorErrorHeader (text) {
   console.log('\n')
 }
 
+const logToSlack = function logToSlack (text, options) {
+  switch(options.status) {
+      case "Success":
+        this.slackSuccess(text)
+        break;
+      case "Status":
+        this.slackStatus(text)
+        break;
+      case "Error":
+        this.slackFailure(text, options.error)
+      default:
+        this.slackStatus("Made call without status")
+  }
+}
+
 const slackStatus = function slackStatus (text) {
   if (process.env.NODE_ENV === 'production') {
     slack.send({
       text: text,
-      channel: '#scrapers',
-      username: 'Scraper Bot',
+      channel: channel,
+      username: botUsername,
     })
   } else {
     console.log(text)
@@ -45,8 +62,8 @@ const slackSuccess = function slackSuccess (text) {
   if (process.env.NODE_ENV === 'production') {
     slack.send({
       text: text,
-      channel: '#scrapers',
-      username: 'Scraper Bot',
+      channel: channel,
+      username: botUsername,
     })
   } else {
     console.log(text)
@@ -57,7 +74,7 @@ const slackFailure = function slackFailure (text, e) {
   if (process.env.NODE_ENV === 'production') {
     slack.send({
       text: '<!channel>',
-      channel: '#scrapers',
+      channel: channel,
       attachments: [
         {
             "title": text,
@@ -67,7 +84,7 @@ const slackFailure = function slackFailure (text, e) {
             "mrkdwn_in": ['text']
         }
       ],
-      username: 'Scraper Bot',
+      username: botUsername,
     })
   } else {
     console.log(text + "\n" + prettyError.render(e))
@@ -127,4 +144,5 @@ module.exports = {
   lineBreaks,
   wait,
   printFieldRow,
+  logToSlack,
 }
