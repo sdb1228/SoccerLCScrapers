@@ -4,6 +4,9 @@ const slack = new Slack('https://hooks.slack.com/services/T0NSD3QEL/B2L4BU9HA/eL
 const Table = require('cli-table')
 const PrettyError = require('pretty-error')
 const prettyError = new PrettyError()
+if (process.env.NODE_ENV === 'production') {
+  prettyError.withoutColors()
+}
 
 const headerBreak = function headerBreak (text) {
   console.log('\n')
@@ -51,10 +54,19 @@ const slackSuccess = function slackSuccess (text) {
 }
 
 const slackFailure = function slackFailure (text, e) {
-  if (process.env.NODE_ENV) {
+  if (process.env.NODE_ENV === 'production') {
     slack.send({
-      text: '<!channel> ' + text + "\n" + prettyError.render(e),
-    channel: '#scrapers',
+      text: '<!channel>',
+      channel: '#scrapers',
+      attachments: [
+        {
+            "title": text,
+            "title_link": "https://groove.hq/path/to/ticket/1943",
+            "text": "``` " +  prettyError.render(e) + " ```",
+            "color": "#ff0000",
+            "mrkdwn_in": ['text']
+        }
+      ],
       username: 'Scraper Bot',
     })
   } else {
