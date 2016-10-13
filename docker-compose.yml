@@ -25,6 +25,8 @@ services:
       context: .
       dockerfile: server.Dockerfile
     command: npm start
+    ports:
+      - "1337:1337"
     environment:
       PGUSER: SoccerLC
       PGPASSWORD: password
