@@ -70,6 +70,7 @@ const initialFacilityInsert = function initialFacilityInsert (facilities) {
       city: facility.city,
       zip: facility.zip,
       state: facility.state,
+      environment: facility.environment,
     })
     .then(function(inserted) {
       if (inserted) {
