@@ -71,6 +71,7 @@ const initialFacilityInsert = function initialFacilityInsert (facilities) {
       zip: facility.zip,
       state: facility.state,
       environment: facility.environment,
+      image: facility.image,
     })
     .then(function(inserted) {
       if (inserted) {
