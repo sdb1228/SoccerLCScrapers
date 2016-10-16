@@ -25,6 +25,9 @@
     "no-debugger": [1]
   },
   "globals": {
-    "alert": false
+    "alert": false,
+    "App": true,
+    "Models": true,
+    "Log": true,
   }
 }
