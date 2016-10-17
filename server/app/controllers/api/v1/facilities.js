@@ -24,6 +24,22 @@ module.exports = () => ({
     }
   },
 
+  ':facility/teams/:team/games': {
+    get: (req, res, next) => {
+      const cursor = new Cursor(req, res, Models.Game, ['gameDateTime', 'fieldId'], {
+        where: {
+          facilityId: req.params.facility,
+          $or: {
+            homeTeamId: req.params.team,
+            awayTeamId: req.params.team
+          }
+        },
+        include: gameIncludes
+      })
+      cursor.sendPage().catch(next)
+    }
+  },
+
   ':facility/games/today': {
     get: (req, res, next) => {
       const cursor = new Cursor(req, res, Models.Game, ['gameDateTime', 'fieldId'], {
