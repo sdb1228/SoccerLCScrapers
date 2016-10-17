@@ -1,5 +1,6 @@
 const Cursor = require('../../../Cursor')
 const moment = require('moment')
+const gameIncludes = [{model: Models.Field, as: 'field'}, {model: Models.Team, as: 'homeTeam'}, {model: Models.Team, as: 'awayTeam'}]
 
 module.exports = () => ({
   '/': {
@@ -32,7 +33,8 @@ module.exports = () => ({
             $gte: moment().startOf('day'),
             $lt: moment().endOf('day')
           }
-        }
+        },
+        include: gameIncludes
       })
       cursor.sendPage().catch(next)
     }
@@ -47,7 +49,8 @@ module.exports = () => ({
             $gte: moment().startOf('day').add(1, 'days'),
             $lt: moment().endOf('day').add(1, 'days')
           }
-        }
+        },
+        include: gameIncludes
       })
       cursor.sendPage().catch(next)
     }

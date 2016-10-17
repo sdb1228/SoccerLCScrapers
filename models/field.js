@@ -10,7 +10,7 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        Field.hasMany(models.Game, {foreignKey: 'fieldId'})
+        Field.hasMany(models.Game, {as: 'games', foreignKey: 'fieldId'})
       }
     }
   });

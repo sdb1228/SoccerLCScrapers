@@ -10,9 +10,9 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        Team.belongsTo(models.Facility, {foreignKey: 'facilityId'})
-        Team.hasMany(models.Game, {as: 'HomeGames', foreignKey: 'homeTeamId'})
-        Team.hasMany(models.Game, {as: 'AwayGames', foreignKey: 'awayTeamId'})
+        Team.belongsTo(models.Facility, {as: 'facility', foreignKey: 'facilityId'})
+        Team.hasMany(models.Game, {as: 'homeGames', foreignKey: 'homeTeamId'})
+        Team.hasMany(models.Game, {as: 'awayGames', foreignKey: 'awayTeamId'})
       }
     }
   });

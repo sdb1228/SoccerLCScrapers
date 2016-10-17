@@ -16,6 +16,8 @@ class Cursor {
     this.res = res
     this.cursor = null
     this.where = opts.where || {}
+    this.findAllOpts = R.omit(['where', 'limit', 'order'], opts) // maybe switch to whitelisting acceptable find options
+
     const [url, queryString] = (req.protocol + '://' + req.get('host') + req.originalUrl).split('?')
     this.url = url
     this.query = querystring.parse(querystring)
@@ -57,11 +59,11 @@ class Cursor {
     // the reason is because we set the response links here and those can't be edited. we could probably hack around that if we need multi-page.
     if (this.gotPage) { return undefined }
     this.gotPage = true
-    return this.model.findAll({
+    return this.model.findAll(R.merge({
       where: this.whereClause(),
       order: this.keys,
       limit: DEFAULT_LIMIT
-    }).then((collection) => {
+    }, this.findAllOpts)).then((collection) => {
       if (collection.length >= DEFAULT_LIMIT) {
         // more pages. set the link.
         this.cursor = R.pick(this.keys, R.last(collection))

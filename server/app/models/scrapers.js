@@ -1,13 +1,18 @@
 const Sequelize = require('sequelize')
-const scraperModels = ['facility', 'field', 'game', 'team']
+const scraperModels = ['Facility', 'Field', 'Game', 'Team']
 
 module.exports = {
   provider: 'sequelize',
   multi: true,
   init: (sequelize) => {
-    return scraperModels.reduce((models, model) => {
+    const models = scraperModels.reduce((models, model) => {
       models[model] = require(`./imports/${model}`)(sequelize, Sequelize.DataTypes)
       return models
     }, {})
+    for (let modelName in models) {
+      const model = models[modelName]
+      if (model.associate) model.associate(models)
+    }
+    return models
   },
 }
