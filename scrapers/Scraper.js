@@ -56,8 +56,8 @@ class Scraper {
       this.requestLimiter.removeTokens(1, () => {
         jsonLog({get: {url: url}})
         superagent.get(url).end((err, res) => {
-          if (err) {reject(err)}
-          this.extract(url, res).then(resolve).catch(reject)
+          if (err) { return reject(err) }
+          return this.extract(url, res).then(resolve).catch(reject)
         })
       })
     })

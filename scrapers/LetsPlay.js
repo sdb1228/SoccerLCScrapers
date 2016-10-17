@@ -12,13 +12,18 @@ const facilityPattern = rootPattern + '/facilities/:facilityId'
 s.domExtractor(facilityPattern + '/teams', function extractTeamUrls(req, res) {
   const $ = req.$
   const anchors = $("a")
+  let gotSomething = false
   for (let i = 0; i < anchors.length; i++) {
     const a = $(anchors[i])
     const href = a.attr('href')
     if (href && (match = href.match(teamUrlRegex))) {
+      gotSomething = true
       const [url, facilityId, id] = match
       res.get(Url.resolve(rootUrl, url))
     }
+  }
+  if (!gotSomething) {
+    throw 'No team urls'
   }
 })
 
