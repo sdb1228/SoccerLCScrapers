@@ -1,11 +1,5 @@
-const db = require('./models')
-const moment = require('moment')
-const {slackSuccess, slackFailure} = require('./Helpers.js')
-const async = require('asyncawait/async')
-const await = require('asyncawait/await')
-
-let Scraper = require('./Scraper')
-let s = new Scraper('UtahSoccer')
+const Scraper = require('./Scraper')
+const s = new Scraper('UtahSoccer')
 
 const rootPattern = 'utahsoccer.org'
 const rootUrl = 'https://utahsoccer.org'
@@ -71,67 +65,21 @@ s.jsonExtractor(rootPattern + gamePath, function extractGames(req, res) {
           division: division
         })
       }
-      let field_name = game.field_name
-      if (field_name === '-Bye-') field_name = null
       res.save({
         type: 'game',
         gameId: game.game_id,
-        field: field_name,
+        field: game.field_name,
         gameDateTime: new Date(game.day_of_week + ' ' + game.game_date + ' ' + game.time_ampm),
-        homeTeamId: home_team_id,
-        awayTeamId: away_team_id
+        homeTeamId: game.home_team_id,
+        awayTeamId: game.away_team_id
       })
     }
   }
 })
 
-s.loader(async (function saveFields(scraped) {
-  for (let i = 0; i < scraped.fields.length; i++) {
-    const field = scraped.fields[i]
-    await (db.findOrCreateFieldByName(field.name, field))
-  }
-}))
-
-s.loader(async (function saveTeams(scraped) {
-  for (let i = 0; i < scraped.teams.length; i++) {
-    const team = scraped.teams[i]
-    team.facilityId = scraped.facilityId
-    // todo: upsert?
-    const [dbTeam] = await (db.findOrCreateTeamByTeamId(team.teamId, team))
-    if (!dbTeam.facilityId) { dbTeam.facilityId = scraped.facilityId }
-    if (!dbTeam.name) { dbTeam.name = team.name}
-    if (!dbTeam.division) { dbTeam.division = team.division }
-    await(dbTeam.save())
-  }
-}))
-
-s.loader(async (function saveGames(scraped) {
-  // todo: make this much smarter
-  const t = await (db.sequelize.transaction())
-  try {
-    db.Game.destroy({where: {facilityId: scraped.facilityId}, transaction: t})
-    for (let i = 0; i < scraped.games.length; i++) {
-      const game = scraped.games[i]
-      const [fieldId, homeTeamId, awayTeamId] = await (db.findOrCreateFieldAndTeamIds(game.field, game.homeTeamId, game.awayTeamId))
-      const [dbGame] = await (db.Game.findOrCreate({
-        where: {
-          facilityId: scraped.facilityId,
-          fieldId: fieldId,
-          gameDateTime: new Date(game.gameDateTime),
-          homeTeamId: homeTeamId,
-          awayTeamId: awayTeamId
-        }, transaction: t}))
-      /* // no scores scraped yet
-        if (!dbGame.homeTeamScore && game.homeTeamScore) { dbGame.homeTeamScore = game.homeTeamScore }
-      if (!dbGame.awayTeamScore && game.awayTeamScore) { dbGame.awayTeamScore = game.awayTeamScore }
-      await (dbGame.save({transaction: t}))*/
-    }
-    t.commit()
-  } catch (e) {
-    t.rollback()
-    throw(e)
-  }
-}))
+s.loader(Scraper.Common.saveFields)
+s.loader(Scraper.Common.saveTeams)
+s.loader(Scraper.Common.saveGames)
 
 s.initialUrls = [rootUrl + gamePath + gameParams, rootUrl + teamPath, rootUrl + fieldPath]
 s.scrapeResults.facilityId = 1

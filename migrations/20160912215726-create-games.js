@@ -50,6 +50,9 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
+      },
+      lastBatchAt: {
+        type: Sequelize.DATE
       }
     });
   },

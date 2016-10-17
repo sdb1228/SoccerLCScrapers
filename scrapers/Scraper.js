@@ -7,6 +7,7 @@ const await = require('asyncawait/await')
 const inflection = require('inflection')
 const moment = require('moment')
 const {slackStatus, slackSuccess, slackFailure} = require('./Helpers.js')
+const Common = require('./Common')
 
 function jsonLog(obj) { console.log(JSON.stringify(obj, null, 2)) }
 
@@ -16,9 +17,11 @@ class Scraper {
     this.requestLimiter = new RateLimiter(...(opts.rateLimit || [20, 'minute']))
     this.extractors = []
     this.loaders = []
-    this.scrapeResults = {}
     this.initialUrl = null
     this.initialUrls = []
+    this.scrapeResults = {
+      batchAt: new Date()
+    }
   }
 
   run() {
@@ -133,5 +136,7 @@ class Scraper {
     this.loaders.push(cb)
   }
 }
+
+Scraper.Common = Common
 
 module.exports = Scraper

@@ -1,10 +1,7 @@
-const Url = require('url')
-const db = require('./models')
-const async = require('asyncawait/async')
-const await = require('asyncawait/await')
-
 let Scraper = require('./Scraper')
-let s = new Scraper('SportCity', {rateLimit: [2, 'second']})
+let s = new Scraper('SportCity', {rateLimit: [10, 'second']})
+
+const Url = require('url')
 
 const divisionPattern = 'sportcityutah.com/schedules-adult(/)'
 const schedulePattern = 'soccer-city-utah.ezleagues.ezfacility.com/leagues/:leagueId(/*)'
@@ -85,43 +82,8 @@ s.domExtractor(gamePattern, function extractGame(req, res) {
   })
 })
 
-s.loader(async (function saveTeams(scraped) {
-  for (let i = 0; i < scraped.teams.length; i++) {
-    const team = scraped.teams[i]
-    team.facilityId = scraped.facilityId
-    // todo: upsert?
-    let [dbTeam] = await (db.findOrCreateTeamByTeamId(team.teamId, team))
-    if (!dbTeam.facilityId) { dbTeam.facilityId = team.facilityId }
-    if (!dbTeam.name) { dbTeam.name = team.name}
-    await(dbTeam.save())
-  }
-}))
-
-s.loader(async (function saveGames(scraped) {
-  const t = await (db.sequelize.transaction())
-  try {
-    db.Game.destroy({where: {facilityId: scraped.facilityId}, transaction: t})
-    for (let i = 0; i < scraped.games.length; i++) {
-      const game = scraped.games[i]
-      const [fieldId, homeTeamId, awayTeamId] = await (db.findOrCreateFieldAndTeamIds(game.field, game.homeTeamId, game.awayTeamId))
-      // todo: handle reschedules
-      const [dbGame] = await (db.Game.findOrCreate({
-        where: {
-          facilityId: scraped.facilityId,
-          fieldId: fieldId,
-          gameDateTime: new Date(game.gameDateTime),
-          homeTeamId: homeTeamId,
-          awayTeamId: awayTeamId
-        }, transaction: t}))
-      if (!dbGame.homeTeamScore && game.homeTeamScore) { dbGame.homeTeamScore = game.homeTeamScore }
-      if (!dbGame.awayTeamScore && game.awayTeamScore) { dbGame.awayTeamScore = game.awayTeamScore }
-      await (dbGame.save({transaction: t}))
-    }
-    t.commit()
-  } catch (e) {
-    t.rollback()
-  }
-}))
+s.loader(Scraper.Common.saveTeams)
+s.loader(Scraper.Common.saveGames)
 
 s.initialUrl = DIVISIONS_URL
 s.scrapeResults.facilityId = FACILITY_ID

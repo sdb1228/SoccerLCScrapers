@@ -15,7 +15,8 @@ module.exports = function(sequelize, DataTypes) {
                    unique: 'gameCombo'},
     fieldId: {type: DataTypes.INTEGER,
               unique: 'gameCombo'},
-    tournament: DataTypes.INTEGER
+    tournament: DataTypes.INTEGER,
+    lastBatchAt: DataTypes.DATE// the start time of the scraper run that last touched this game
   }, {
     classMethods: {
       associate: function(models) {
