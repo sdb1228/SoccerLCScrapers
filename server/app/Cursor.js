@@ -42,9 +42,9 @@ class Cursor {
         this.where,
         {
           $or: R.mapAccum(
-            (fields, key) => [
-              R.omit(key, fields),
-              R.evolve({[key]: R.objOf('$gt')}, fields)
+            (fields, gtKey) => [
+              R.omit(gtKey, fields),
+              R.evolve({[gtKey]: R.objOf('$gt')}, fields)
             ],
             this.cursor,
             R.reverse(this.keys)
