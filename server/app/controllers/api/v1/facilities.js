@@ -1,6 +1,8 @@
 const Cursor = require('../../../Cursor')
+const Sequelize = require('sequelize')
 const moment = require('moment')
 const gameIncludes = [{model: Models.Field, as: 'field'}, {model: Models.Team, as: 'homeTeam'}, {model: Models.Team, as: 'awayTeam'}]
+const R = require('ramda')
 
 module.exports = () => ({
   '/': {
@@ -24,6 +26,23 @@ module.exports = () => ({
     }
   },
 
+  ':facility/divisions': {
+    get: (req, res, next) => {
+      const cursor = new Cursor(req, res, Models.Team, ['division'], {
+        where: {facilityId: req.params.facility},
+        attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('division')), 'division']]
+      })
+      cursor.getPage().then(teams => res.ok(R.map(team => ({name: team.division}), teams))).catch(next)
+    }
+  },
+
+  ':facility/divisions/:division/teams': {
+    get: (req, res, next) => {
+      const cursor = new Cursor(req, res, Models.Team, ['name', 'teamId'], {where: {facilityId: req.params.facility, division: req.params.division}})
+      cursor.sendPage().catch(next)
+    }
+  },
+
   ':facility/teams/:team/games': {
     get: (req, res, next) => {
       const cursor = new Cursor(req, res, Models.Game, ['gameDateTime', 'fieldId'], {
@@ -33,6 +52,20 @@ module.exports = () => ({
             homeTeamId: req.params.team,
             awayTeamId: req.params.team
           }
+        },
+        include: gameIncludes
+      })
+      cursor.sendPage().catch(next)
+    }
+  },
+
+  ':facility/divisions/:division/games': {
+    get: (req, res, next) => {
+      const cursor = new Cursor(req, res, Models.Game, ['gameDateTime', 'fieldId'], {
+        where: {
+          facilityId: req.params.facility,
+          $and: [['"homeTeam"."division"=?', [req.params.division]],
+                 ['"awayTeam"."division"=?', [req.params.division]]]
         },
         include: gameIncludes
       })
