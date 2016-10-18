@@ -1,5 +1,5 @@
 const Cursor = require('../../../Cursor')
-const Sequelize = require('sequelize')
+const Sequelize = Models.Game.sequelize
 const moment = require('moment')
 const gameIncludes = [{model: Models.Field, as: 'field'}, {model: Models.Team, as: 'homeTeam'}, {model: Models.Team, as: 'awayTeam'}]
 const R = require('ramda')
@@ -70,6 +70,44 @@ module.exports = () => ({
         include: gameIncludes
       })
       cursor.sendPage().catch(next)
+    }
+  },
+
+  ':facility/divisions/:division/standings': {
+    get: (req, res, next) => {
+      Sequelize.query(` \
+with "standingGames" as ( \
+  select * from "Games" where \
+    "tournament" is null AND \
+    "awayTeamScore" is not null AND \
+    "homeTeamScore" is not null AND \
+    "deletedAt" is null AND \
+    "facilityId" = :facilityId \
+), "teamScores" as ( \
+  select "homeTeamId"    as "teamId", \
+         "homeTeamScore" as "goalsFor", \
+         "awayTeamScore" as "goalsAgainst" \
+    from "standingGames" \
+  union all \
+  select "awayTeamId"    as "teamId", \
+         "awayTeamScore" as "goalsFor", \
+         "homeTeamScore" as "goalsAgainst" \
+    from "standingGames" \
+), "teamStats" as ( \
+  select "teamScores"."teamId", \
+         sum("goalsFor") as "goalsFor", \
+         sum("goalsAgainst") as "goalsAgainst", \
+         count(*) as "gamesPlayed", \
+         count(nullif("goalsFor">"goalsAgainst", false)) as "wins", \
+         count(nullif("goalsFor"<"goalsAgainst", false)) as "losses", \
+         count(nullif("goalsFor"="goalsAgainst", false)) as "ties", \
+         count(nullif("goalsFor">"goalsAgainst", false)) * 3 + count(nullif("goalsFor"="goalsAgainst", false)) as "points" \
+    from "teamScores" group by "teamScores"."teamId") \
+select "name", "teamStats"."teamId", "goalsFor", "goalsAgainst", "gamesPlayed", "wins", "losses", "ties", "points" \
+  from "teamStats" \
+  inner join "Teams" on "Teams"."id" = "teamStats"."teamId" \
+  where "division" = :division \
+  order by "points" desc, "name"`, { replacements: {facilityId: parseInt(req.params.facility), division: req.params.division}, type: Sequelize.QueryTypes.SELECT}).then(standings => res.ok(standings)).catch(next)
     }
   },
 
