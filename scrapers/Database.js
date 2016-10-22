@@ -1,3 +1,4 @@
+global.Promise = require('bluebird')
 const helpers = require('./Helpers')
 const log = require('custom-logger').config({ level: 0 })
 var models = require("./models")
@@ -62,30 +63,29 @@ function insertOrUpdateWithGameId (gameId, field, dateTime, homeTeam, awayTeam, 
     })
 }
 
-const initialFacilityInsert = function initialFacilityInsert (facilities) {
+const initialFacilityInsert = Promise.coroutine(function* initialFacilityInsert (facilities) {
   for (let facility of facilities) {
-    Facility.upsert({
-      name: facility.name,
-      address: facility.address,
-      city: facility.city,
-      zip: facility.zip,
-      state: facility.state,
-      environment: facility.environment,
-      image: facility.image,
-    })
-    .then(function(inserted) {
+   try {
+      let inserted = yield Facility.upsert({
+        name: facility.name,
+        address: facility.address,
+        city: facility.city,
+        zip: facility.zip,
+        state: facility.state,
+        environment: facility.environment,
+        image: facility.image,
+      })
       if (inserted) {
         log.info('***** Inserted Facility row *****')
       } else {
         log.info('***** Updated Facility row *****')
       }
-    })
-    .catch(function(err) {
+    } catch(err) {
       helpers.minorErrorHeader('Error running update or insert on facility ' + err)
-      return helpers.slackFailure('Error running update or insert on facility ' + err)
-    })
+      helpers.slackFailure('Error running update or insert on facility ' + err)
+    }
   }
-}
+})
 
 const insertOrUpdateField = function insertOrUpdateField (data) {
   return Field.create(data)
