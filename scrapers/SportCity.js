@@ -23,6 +23,10 @@ s.domExtractor(divisionPattern, function extractDivisions(req, res) {
 s.domExtractor(schedulePattern, function extractSchedule(req, res) {
   const $ = req.$
   const rows = $('div#ctl00_C_pnlSchedule tr')
+  let title = $('span.PageTitle').text()
+  title = title.replace(/(\r\n|\n|\r)/gm,"")
+  title = title.substring(11)
+  const division = title.match(/(.*\s{2})/gm)[0].trim()
   rows.each((_, row) => {
     const cols = $(row).children('td')
 
@@ -36,7 +40,7 @@ s.domExtractor(schedulePattern, function extractSchedule(req, res) {
           type: 'team',
           teamId: match[1],
           name: team.text().trim(),
-          division: req.params.leagueId
+          division: division
         })
       }
     })
