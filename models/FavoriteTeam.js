@@ -11,6 +11,7 @@ module.exports = function(sequelize, DataTypes) {
     classMethods: {
       associate: function(models) {
         FavoriteTeam.belongsTo(models.Team, {as: 'team', foreignKey: 'teamId'})
+        FavoriteTeam.belongsTo(models.Installation, {as: 'installation', foreignKey: 'installationId', targetKey: 'installationId'})
       }
     }
   })

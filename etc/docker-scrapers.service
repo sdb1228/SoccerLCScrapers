@@ -1,0 +1,9 @@
+[Unit]
+Description=Scraper service
+Requires=docker.service
+After=docker.service
+
+[Service]
+ExecStart=/usr/bin/docker run --net="host" -e NODE_ENV=production --name scrapers scrapers npm start
+ExecStop=/usr/bin/docker stop scrapers
+ExecStopPost=/usr/bin/docker rm -f scrapers

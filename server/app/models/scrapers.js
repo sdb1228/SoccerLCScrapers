@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize')
-const scraperModels = ['Facility', 'Field', 'Game', 'Team', 'FavoriteTeam']
+const scraperModels = ['Facility', 'Field', 'Game', 'Team', 'FavoriteTeam', 'Installation']
 
 module.exports = {
   provider: 'sequelize',

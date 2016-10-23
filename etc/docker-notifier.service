@@ -1,0 +1,9 @@
+[Unit]
+Description=Notifier service
+Requires=docker.service
+After=docker.service
+
+[Service]
+ExecStart=/usr/bin/docker run --net="host" -e NODE_ENV=production --name notifier notifier npm start
+ExecStop=/usr/bin/docker stop notifier
+ExecStopPost=/usr/bin/docker rm -f notifier

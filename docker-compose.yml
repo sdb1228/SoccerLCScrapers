@@ -38,3 +38,16 @@ services:
       - postgres
     links:
       - postgres
+
+  notifier:
+    build:
+      context: .
+      dockerfile: notifier.Dockerfile
+    command: npm start
+    environment:
+      PGUSER: SoccerLC
+      PGPASSWORD: password
+      PGDATABASE: SoccerLC
+      PGHOST: postgres
+    links:
+      - postgres

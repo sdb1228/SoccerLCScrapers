@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   up: function(queryInterface, Sequelize) {
-    return queryInterface.createTable('FavoriteTeams', {
+    return queryInterface.createTable('Installations', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -12,9 +12,11 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false
       },
-      teamId: {
-        type: Sequelize.INTEGER,
-        allowNull: false
+      deviceToken: {
+        type: Sequelize.STRING
+      },
+      lastNotifiedAt: {
+        type: Sequelize.DATE
       },
       deletedAt: {
         type: Sequelize.DATE
@@ -30,6 +32,6 @@ module.exports = {
     });
   },
   down: function(queryInterface, Sequelize) {
-    return queryInterface.dropTable('FavoriteTeams');
+    return queryInterface.dropTable('Installations');
   }
 };

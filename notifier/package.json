@@ -1,0 +1,23 @@
+{
+  "name": "notifier",
+  "version": "1.0.0",
+  "description": "SoccerLC push notifier",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node --max-old-space-size=256 Entry.js"
+  },
+  "author": "Joel Hough",
+  "license": "ISC",
+  "devDependencies": {},
+  "dependencies": {
+    "asyncawait": "^1.0.6",
+    "bluebird": "^3.4.6",
+    "fcm-node": "^1.0.15",
+    "moment": "^2.15.1",
+    "pg": "^6.0.3",
+    "pretty-error": "^2.0.1",
+    "ramda": "^0.22.1",
+    "sequelize": "^3.24.2",
+    "sequelize-cli": "^2.4.0"
+  }
+}

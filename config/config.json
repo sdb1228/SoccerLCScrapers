@@ -4,7 +4,10 @@
     "password": "password",
     "database": "SoccerLC",
     "host": "postgres",
-    "dialect": "postgres"
+    "dialect": "postgres",
+    "fcm": {
+      "serverKey": "12345"
+    }
   },
   "test": {
     "username": "root",

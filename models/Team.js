@@ -13,6 +13,7 @@ module.exports = function(sequelize, DataTypes) {
         Team.belongsTo(models.Facility, {as: 'facility', foreignKey: 'facilityId'})
         Team.hasMany(models.Game, {as: 'homeGames', foreignKey: 'homeTeamId'})
         Team.hasMany(models.Game, {as: 'awayGames', foreignKey: 'awayTeamId'})
+        Team.hasMany(models.FavoriteTeam, {as: 'favorites', foreignKey: 'teamId'})
       }
     }
   });

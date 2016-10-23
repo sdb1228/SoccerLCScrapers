@@ -1,0 +1,30 @@
+#!/bin/bash
+
+GIT_DIR=/var/scrapers_repo/scrapers.git
+WORK_TREE=/var/soccerlc_scrapers/
+while read oldrev newrev ref
+do
+    if [[ $ref =~ .*/master$ ]];
+    then
+        echo "Master ref received.  Deploying master branch to production..."
+        mkdir -p $WORK_TREE
+        git --work-tree=$WORK_TREE --git-dir=$GIT_DIR checkout -f
+        mkdir -p $WORK_TREE/shared/pids $WORK_TREE/shared/sockets $WORK_TREE/shared/log
+
+        # start deploy tasks
+        cd $WORK_TREE
+	cp /var/secrets/config.json /var/soccerlc_scrapers/config
+	docker build -f scrapers.Dockerfile -t scrapers .
+	docker run --net="host" -e NODE_ENV=production --rm scrapers node_modules/.bin/sequelize --env production db:migrate
+	docker run --net="host" -e NODE_ENV=production --rm scrapers node Facilities.js
+
+	docker build -f notifier.Dockerfile -t notifier .
+
+  docker build -f server.Dockerfile -t server .
+  systemctl restart docker-server
+
+        echo "Git hooks deploy complete"
+    else
+        echo "Ref $ref successfully received.  Doing nothing: only the master branch may be deployed on this server."
+    fi
+done

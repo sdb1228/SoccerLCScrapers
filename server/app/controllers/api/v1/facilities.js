@@ -1,5 +1,5 @@
 const Cursor = require('../../../Cursor')
-const Sequelize = Models.Game.sequelize
+const sequelize = Models.Game.sequelize
 const moment = require('moment')
 const gameIncludes = [{model: Models.Field, as: 'field'}, {model: Models.Team, as: 'homeTeam'}, {model: Models.Team, as: 'awayTeam'}]
 const R = require('ramda')
@@ -30,7 +30,7 @@ module.exports = () => ({
     get: (req, res, next) => {
       const cursor = new Cursor(req, res, Models.Team, ['division'], {
         where: {facilityId: req.params.facility},
-        attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('division')), 'division']]
+        attributes: [[sequelize.fn('DISTINCT', sequelize.col('division')), 'division']]
       })
       cursor.getPage().then(teams => res.ok(R.map(team => ({name: team.division}), teams))).catch(next)
     }
@@ -75,7 +75,7 @@ module.exports = () => ({
 
   ':facility/divisions/:division/standings': {
     get: (req, res, next) => {
-      Sequelize.query(` \
+      sequelize.query(` \
 with "standingGames" as ( \
   select * from "Games" where \
     "tournament" is null AND \
@@ -107,7 +107,7 @@ select "name", "teamStats"."teamId", "goalsFor", "goalsAgainst", "gamesPlayed", 
   from "teamStats" \
   inner join "Teams" on "Teams"."id" = "teamStats"."teamId" \
   where "division" = :division \
-  order by "points" desc, "name"`, { replacements: {facilityId: parseInt(req.params.facility), division: req.params.division}, type: Sequelize.QueryTypes.SELECT}).then(standings => res.ok(standings)).catch(next)
+  order by "points" desc, "name"`, { replacements: {facilityId: parseInt(req.params.facility), division: req.params.division}, type: sequelize.QueryTypes.SELECT}).then(standings => res.ok(standings)).catch(next)
     }
   },
 

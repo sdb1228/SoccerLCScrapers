@@ -1,0 +1,13 @@
+[Unit]
+Description=Web server service
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+ExecStart=/usr/bin/docker run --net="host" -e NODE_ENV=production --name server server npm start
+ExecStop=/usr/bin/docker stop server
+ExecStopPost=/usr/bin/docker rm -f server
+
+[Install]
+WantedBy=default.target
