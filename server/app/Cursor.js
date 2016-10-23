@@ -20,8 +20,7 @@ class Cursor {
 
     const [url, queryString] = (req.protocol + '://' + req.get('host') + req.originalUrl).split('?')
     this.url = url
-    this.query = querystring.parse(querystring)
-
+    this.query = querystring.parse(queryString)
     if (req.query.cursor) {
       try {
         const params = JSON.parse(Buffer.from(req.query.cursor, 'base64').toString('utf-8'))

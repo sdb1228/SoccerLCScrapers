@@ -21,8 +21,19 @@ module.exports = () => ({
 
   ':facility/teams': {
     get: (req, res, next) => {
-      const cursor = new Cursor(req, res, Models.Team, ['name', 'teamId'], {where: {facilityId: req.params.facility}})
-      cursor.sendPage().catch(next)
+      let opts = {
+        where: {facilityId: req.params.facility}
+      }
+      if (req.query.installationId) {
+        opts.include = {model: Models.FavoriteTeam, as: 'favorites', required: false, separate: true, where: {installationId: req.query.installationId}}
+      }
+      const cursor = new Cursor(req, res, Models.Team, ['name', 'teamId'], opts)
+      cursor.getPage().then(teams => res.ok(R.map(team => ({
+        id: team.id,
+        name: team.name,
+        division: team.division,
+        favorite: (team.favorites || []).length > 0
+      }), teams))).catch(next)
     }
   },
 
