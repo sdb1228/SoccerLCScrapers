@@ -12,10 +12,13 @@
   "license": "ISC",
   "dependencies": {
     "asyncawait": "^1.0.6",
+    "bluebird": "^3.4.6",
+    "fcm-node": "^1.0.15",
     "foxver": "git+https://github.com/felixmc/foxver.git",
     "moment": "^2.15.1",
     "pg": "^6.1.0",
     "ramda": "^0.22.1",
-    "sequelize": "^3.24.3"
+    "sequelize": "^3.24.3",
+    "superagent": "^2.3.0"
   }
 }

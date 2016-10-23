@@ -11,6 +11,9 @@
     "s3": {
       "bucket": "soccerlc-store"
     }
-  }
+  },
 
+  "fcm": {
+    "serverKey": "12345"
+  }
 }
