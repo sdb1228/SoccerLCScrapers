@@ -21,4 +21,4 @@ ADD ./server /usr/src/app
 COPY ./config /usr/src/app/config
 COPY ./models /usr/src/app/app/models/imports
 
-EXPOSE 1337
+EXPOSE 80
