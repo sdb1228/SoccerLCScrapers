@@ -39,11 +39,13 @@ module.exports = () => ({
 
   ':facility/divisions': {
     get: (req, res, next) => {
-      const cursor = new Cursor(req, res, Models.Team, ['division'], {
-        where: {facilityId: req.params.facility},
-        attributes: [[sequelize.fn('DISTINCT', sequelize.col('division')), 'division']]
-      })
-      cursor.getPage().then(teams => res.ok(R.map(team => ({name: team.division}), teams))).catch(next)
+      sequelize.query(` \
+select division as name, count(*) as "teamCount" \
+from "Teams" \
+where division is not null \
+group by division \
+order by division \
+`, {type: sequelize.QueryTypes.SELECT}).then(divisions => res.ok(divisions)).catch(next)
     }
   },
 
