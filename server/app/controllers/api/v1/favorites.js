@@ -36,7 +36,13 @@ module.exports = () => ({
             Sequelize.literal(`"homeTeamId" IN (SELECT "teamId" FROM "FavoriteTeams" WHERE "FavoriteTeams"."installationId" = ${SqlString.escape(req.query.installationId)})`),
             Sequelize.literal(`"awayTeamId" IN (SELECT "teamId" FROM "FavoriteTeams" WHERE "FavoriteTeams"."installationId" = ${SqlString.escape(req.query.installationId)})`)
           ]
-        }
+        },
+        include: [{ model: Models.Team,
+                    as: 'awayTeam' },
+                  { model: Models.Team,
+                    as: 'homeTeam' },
+                  { model: Models.Field,
+                    as: 'field' }]
       })
       cursor.sendPage().catch(next)
     }
