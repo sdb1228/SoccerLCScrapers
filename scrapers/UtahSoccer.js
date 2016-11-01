@@ -1,4 +1,5 @@
 const Scraper = require('./Scraper')
+const moment = require('moment-timezone')
 const s = new Scraper('UtahSoccer')
 
 const rootPattern = 'utahsoccer.org'
@@ -69,7 +70,7 @@ s.jsonExtractor(rootPattern + gamePath, function extractGames(req, res) {
         type: 'game',
         gameId: game.game_id,
         field: game.field_name,
-        gameDateTime: new Date(game.day_of_week + ' ' + game.game_date + ' ' + game.time_ampm),
+        gameDateTime: moment.tz(game.game_date + ' ' + game.game_time, 'America/Boise'),
         homeTeamId: game.home_team_id,
         awayTeamId: game.away_team_id
       })

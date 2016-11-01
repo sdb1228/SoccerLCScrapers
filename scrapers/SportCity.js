@@ -2,6 +2,8 @@ let Scraper = require('./Scraper')
 let s = new Scraper('SportCity', {rateLimit: [10, 'second']})
 
 const Url = require('url')
+const moment = require('moment-timezone')
+moment.tz.setDefault('America/Boise')
 
 const divisionPattern = 'sportcityutah.com/schedules-adult(/)'
 const schedulePattern = 'soccer-city-utah.ezleagues.ezfacility.com/leagues/:leagueId(/*)'
@@ -79,8 +81,8 @@ s.domExtractor(gamePattern, function extractGame(req, res) {
     awayTeamId: awayTeamId,
     homeTeamScore: homeScore,
     awayTeamScore: awayScore,
-    // TODO: date handling incl time zone
-    gameDateTime: new Date(`${date} ${time}`),
+    // TODO: date handling incl time zone (currently MST only)
+    gameDateTime: moment.tz(`${date} ${time}`, 'dddd, MMMM MM, YYYY h:mm A', 'America/Boise'),
     field: fieldName,
     gameId: req.params.gameId
   })

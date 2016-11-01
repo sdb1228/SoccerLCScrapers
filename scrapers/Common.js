@@ -1,6 +1,8 @@
 const db = require('./models')
 const async = require('asyncawait/async')
 const await = require('asyncawait/await')
+const moment = require('moment-timezone')
+moment.tz.setDefault('America/Boise')
 
 const saveFields = async (function saveFields(scraped) {
   for (let i = 0; i < scraped.fields.length; i++) {
@@ -51,7 +53,7 @@ const saveGames = async (function saveGames(scraped) {
       // external team ids
       homeTeamId: game.homeTeamId,
       awayTeamId: game.awayTeamId,
-      gameDateTime: game.gameDateTime,
+      gameDateTime: moment.utc(game.gameDateTime),
       homeTeamScore: game.homeTeamScore,
       awayTeamScore: game.awayTeamScore,
       tournament: game.tournament,

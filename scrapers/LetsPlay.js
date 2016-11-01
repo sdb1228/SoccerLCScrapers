@@ -2,6 +2,7 @@ const Scraper = require('./Scraper')
 const s = new Scraper('LetsPlay', {rateLimit: [3, 'second']})
 
 const Url = require('url')
+const moment = require('moment-timezone')
 
 const teamUrlRegex = /.*\/facilities\/(\d+)\/teams\/(\d+)$/
 const seasonDivisionRegex = /^\s*Season:\s+(.*?)\s+Division:\s+(.*?)\s*$/
@@ -13,6 +14,7 @@ s.domExtractor(facilityPattern + '/teams', function extractTeamUrls(req, res) {
   const $ = req.$
   const anchors = $("a")
   let gotSomething = false
+  console.log(anchors.length)
   for (let i = 0; i < anchors.length; i++) {
     const a = $(anchors[i])
     const href = a.attr('href')
@@ -53,6 +55,7 @@ s.domExtractor(facilityPattern + '/teams/:teamId', function extractTeam(req, res
       id: a.attr('href').match(teamUrlRegex)[2]
     }
   }
+  console.log(`${rows.length} rows`)
   for (let i = 0; i < rows.length; i++) {
     let row = $(rows[i])
     const tds = row.find('td').toArray()
@@ -61,7 +64,7 @@ s.domExtractor(facilityPattern + '/teams/:teamId', function extractTeam(req, res
     let [homeTeamScore, awayTeamScore] = $(result).text().split('-')
     res.save({
       type: 'game',
-      gameDateTime: new Date($(date).text()),
+      gameDateTime: moment.tz($(date).text(), 'ddd M-D-YY h:m a', 'America/Boise'),
       field: $(field).text(),
       division: division,
       homeTeamId: resultFromTeamTD(homeTeam).id,
