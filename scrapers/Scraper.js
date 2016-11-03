@@ -85,6 +85,9 @@ class Scraper {
         }.bind(this),
         save: function(json) {
           promises.push(this.save(json))
+        }.bind(this),
+        log: function(msg) {
+          slackStatus(`${this.name} - ${msg}`)
         }.bind(this)
       }
       const [path, params] = url.split('?')
@@ -116,7 +119,9 @@ class Scraper {
       for (let i = 0; i < this.loaders.length; i++) {
         const loader = this.loaders[i]
         // jsonLog({load: {loader: loader.name}}) // asyncawait eats function names so this is useless
-        await (loader(this.scrapeResults))
+        await (loader(this.scrapeResults, {log: function(msg) {
+          slackStatus(`${this.name} - ${msg}`)
+        }.bind(this)}))
       }}.bind(this))()
   }
 

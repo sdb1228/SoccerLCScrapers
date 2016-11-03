@@ -4,16 +4,18 @@ const await = require('asyncawait/await')
 const moment = require('moment-timezone')
 moment.tz.setDefault('America/Denver')
 
-const saveFields = async (function saveFields(scraped) {
+const saveFields = async (function saveFields(scraped, res) {
   for (let i = 0; i < scraped.fields.length; i++) {
     const field = scraped.fields[i]
     await (db.upsertFieldByName(field.name, field))
   }
+  res.log(`Saved ${scraped.fields.length} fields`)
 })
 
-const saveTeams = async (function saveTeams(scraped) {
+const saveTeams = async (function saveTeams(scraped, res) {
   if (!scraped.teams) {
     // if there are no teams because of an error, the extractor should raise the error
+    res.log('No teams saved')
     return
   }
 
@@ -22,6 +24,7 @@ const saveTeams = async (function saveTeams(scraped) {
     team.facilityId = scraped.facilityId
     await(db.upsertTeamByTeamId(team.teamId, team))
   }
+  res.log(`Saved ${scraped.teams.length} teams`)
 })
 
 function isValidGame(game) {
@@ -33,10 +36,11 @@ function isValidGame(game) {
            (!game.homeTeamScore && !game.awayTeamScore && game.homeTeamScore !== 0 && game.awayTeamScore !== 0)))
 }
 
-const saveGames = async (function saveGames(scraped) {
+const saveGames = async (function saveGames(scraped, res) {
   // the _only_ data we care about/trust from the site are games with two valid teams, a valid field, and a valid time. both scores have to be set or not set together.
   if (!scraped.games) {
     // if there are no games because of an error, the extractor should raise the error
+    res.log('No games saved')
     return
   }
 
@@ -60,12 +64,14 @@ const saveGames = async (function saveGames(scraped) {
       batchAt: scraped.batchAt
     }))
   }
+  res.log(`Saved ${scraped.games.length} games`)
 
   const untouchedGames = await(db.Game.findAll({where: {facilityId: scraped.facilityId, lastBatchAt: {$lt: scraped.batchAt}}}))
   for (let i = 0; i < untouchedGames.length; i++) {
     const game = untouchedGames[i]
     console.log(JSON.stringify({untouchedGame: game}, null, 2))
   }
+  res.log(`${untouchedGames.length} stale games`)
 })
 
 module.exports = {
