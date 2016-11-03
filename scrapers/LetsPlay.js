@@ -64,7 +64,7 @@ s.domExtractor(facilityPattern + '/teams/:teamId', function extractTeam(req, res
     let [homeTeamScore, awayTeamScore] = $(result).text().split('-')
     res.save({
       type: 'game',
-      gameDateTime: moment.tz($(date).text(), 'ddd M-D-YY h:m a', 'America/Boise'),
+      gameDateTime: moment.tz($(date).text(), 'ddd M-D-YY h:m a', 'America/Denver'),
       field: $(field).text(),
       division: division,
       homeTeamId: resultFromTeamTD(homeTeam).id,

@@ -130,8 +130,8 @@ select "name", "teamStats"."teamId", "goalsFor", "goalsAgainst", "gamesPlayed", 
         where: {
           facilityId: req.params.facility,
           gameDateTime: {
-            $gte: moment().startOf('day'),
-            $lt: moment().endOf('day')
+            $gte: moment.tz('America/Denver').startOf('day'),
+            $lt: moment.tz('America/Denver').endOf('day')
           }
         },
         include: gameIncludes
@@ -146,8 +146,8 @@ select "name", "teamStats"."teamId", "goalsFor", "goalsAgainst", "gamesPlayed", 
         where: {
           facilityId: req.params.facility,
           gameDateTime: {
-            $gte: moment().startOf('day').add(1, 'days'),
-            $lt: moment().endOf('day').add(1, 'days')
+            $gte: moment.tz('America/Denver').startOf('day').add(1, 'days'),
+            $lt: moment.tz('America/Denver').endOf('day').add(1, 'days')
           }
         },
         include: gameIncludes

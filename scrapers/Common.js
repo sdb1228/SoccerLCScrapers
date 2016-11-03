@@ -2,7 +2,7 @@ const db = require('./models')
 const async = require('asyncawait/async')
 const await = require('asyncawait/await')
 const moment = require('moment-timezone')
-moment.tz.setDefault('America/Boise')
+moment.tz.setDefault('America/Denver')
 
 const saveFields = async (function saveFields(scraped) {
   for (let i = 0; i < scraped.fields.length; i++) {

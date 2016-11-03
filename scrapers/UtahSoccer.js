@@ -70,7 +70,7 @@ s.jsonExtractor(rootPattern + gamePath, function extractGames(req, res) {
         type: 'game',
         gameId: game.game_id,
         field: game.field_name,
-        gameDateTime: moment.tz(game.game_date + ' ' + game.game_time, 'America/Boise'),
+        gameDateTime: moment.tz(game.game_date + ' ' + game.game_time, 'America/Denver'),
         homeTeamId: game.home_team_id,
         awayTeamId: game.away_team_id
       })

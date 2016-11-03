@@ -27,14 +27,12 @@ function buildMessage(token, time, location) {
 const sendTodaysNotifications = Promise.coroutine(function* sendTodaysNotifications() {
   // if it's after 8AM, notify users that have games with favorite teams scheduled today (between now and midnight) unless they've received a notification today (midnight to midnight)
   // todo: nail down edge cases like 8AM games
-  // todo: timezones
+  // todo: user/facility timezones
   // todo: slackify logs
 
   // games that might need notifications
-  //const dayStart = moment().startOf('day')
-  //const dayEnd = moment().endOf('day')
-  const dayStart = moment().startOf('week')
-  const dayEnd = moment().endOf('week')
+  const dayStart = moment.tz('America/Denver').startOf('day')
+  const dayEnd = moment.tz('America/Denver').endOf('day')
 
   const games = yield db.sequelize.query(` \
 select \
@@ -63,7 +61,7 @@ where \
   console.log(JSON.stringify({numFavoritedGames: games.length, startTime: dayStart, endTime: dayEnd}, null, 2))
   for (let favoriteGame of games) {
     try {
-      const message = buildMessage(favoriteGame.deviceToken, moment(favoriteGame.gameDateTime), favoriteGame.fieldName)
+      const message = buildMessage(favoriteGame.deviceToken, moment(favoriteGame.gameDateTime).tz('America/Denver'), favoriteGame.fieldName)
       console.log(JSON.stringify({message: message, installation: R.pick(['installationId', 'deviceToken']), favoriteGame: favoriteGame}, null, 2))
       yield sendMessage(message)
     } catch (e) {
