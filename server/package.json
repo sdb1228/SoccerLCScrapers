@@ -16,6 +16,7 @@
     "fcm-node": "^1.0.15",
     "foxver": "git+https://github.com/felixmc/foxver.git",
     "moment": "^2.15.1",
+    "node-slack": "0.0.7",
     "pg": "^6.1.0",
     "ramda": "^0.22.1",
     "sequelize": "^3.24.3",
