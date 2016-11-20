@@ -28,6 +28,24 @@ module.exports = () => ({
           next(e)
         }
       })()
+    },
+    post: (req, res, next) => {
+      Promise.coroutine(function* (){
+        try {
+          let installation = Models.Installation.findOrCreate({where: {
+            installationId: req.body.installationId,
+          }})
+          .spread((installation, isNew) => {
+            if (isNew) {
+              res.status(201).send('Created').end()
+            } else {
+              res.status(200).send('Existing').end()
+            }
+          })
+        } catch (e) {
+          next(e)
+        }
+      })()
     }
   }
 })

@@ -1,8 +1,8 @@
 const querystring = require('querystring')
 const R = require('ramda')
 
-const DEFAULT_LIMIT = 300
-const MAXIMUM_LIMIT = 500
+const DEFAULT_LIMIT = 700
+const MAXIMUM_LIMIT = 1000
 
 function limitLimiter(req) {
   return req.query.limit = R.compose(R.clamp(1, MAXIMUM_LIMIT), R.defaultTo(DEFAULT_LIMIT), parseInt)(req.query.limit)
