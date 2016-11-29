@@ -40,7 +40,7 @@ db.updateIfNull = async(function updateIfNull(model, vals) {
   if (vals) {
     for (const key in vals) {
       // 0 is a useful value. don't overwrite.
-      if (!model[key] && model[key] !== 0 && vals[key]) { model[key] = vals[key] }
+      if (!model[key] && model[key] !== 0 && (vals[key] || vals[key] === 0)) { model[key] = vals[key] }
     }
     await(model.save())
   }
