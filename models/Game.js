@@ -16,7 +16,8 @@ module.exports = function(sequelize, DataTypes) {
     fieldId: {type: DataTypes.INTEGER,
               unique: 'gameCombo'},
     tournament: DataTypes.INTEGER,
-    lastBatchAt: DataTypes.DATE// the start time of the scraper run that last touched this game
+    lastBatchAt: DataTypes.DATE, // the start time of the scraper run that last touched this game
+    staleAt: DataTypes.DATE // non-null when the game is stale. set to the batch start time when the game was first not found.
   }, {
     classMethods: {
       associate: function(models) {

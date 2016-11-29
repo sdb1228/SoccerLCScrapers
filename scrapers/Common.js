@@ -66,6 +66,7 @@ const saveGames = async (function saveGames(scraped, res) {
   }
   res.log(`Saved ${scraped.games.length} games`)
 
+  await(db.Game.update({staleAt: scraped.batchAt}, {where: {facilityId: scraped.facilityId, staleAt: null, lastBatchAt: {$lt: scraped.batchAt}}}))
   const untouchedGames = await(db.Game.findAll({where: {facilityId: scraped.facilityId, lastBatchAt: {$lt: scraped.batchAt}}}))
   for (let i = 0; i < untouchedGames.length; i++) {
     const game = untouchedGames[i]

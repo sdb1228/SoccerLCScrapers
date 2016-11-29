@@ -87,6 +87,7 @@ db.upsertGame = async((gameData) => {
     // identical games. touch the batch id.
     // scored games. update the scores, touch the batch id.
     game.lastBatchAt = gameData.batchAt
+    game.staleAt = null
     await(db.updateIfNull(game, {homeTeamScore: homeScore, awayTeamScore: awayScore}))
     await(game.save())
   } else {

@@ -95,6 +95,7 @@ with "standingGames" as ( \
     "awayTeamScore" is not null AND \
     "homeTeamScore" is not null AND \
     "deletedAt" is null AND \
+    "staleAt" is null AND \
     "facilityId" = :facilityId \
 ), "teamScores" as ( \
   select "homeTeamId"    as "teamId", \
