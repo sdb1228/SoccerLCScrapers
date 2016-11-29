@@ -22,7 +22,7 @@ module.exports = () => ({
   ':facility/teams': {
     get: (req, res, next) => {
       let opts = {
-        where: {facilityId: req.params.facility}
+        where: {facilityId: req.params.facility, lastGameAt: {$gte: moment.tz('America/Denver').startOf('day').subtract(5, 'days')}}
       }
       if (req.query.installationId) {
         opts.include = {model: Models.FavoriteTeam, as: 'favorites', required: false, separate: true, where: {installationId: req.query.installationId}}
@@ -32,7 +32,8 @@ module.exports = () => ({
         id: team.id,
         name: team.name,
         division: team.division,
-        favorite: (team.favorites || []).length > 0
+        favorite: (team.favorites || []).length > 0,
+        lastGameAt: team.lastGameAt
       }), teams))).catch(next)
     }
   },

@@ -6,7 +6,8 @@ module.exports = function(sequelize, DataTypes) {
              unique: true},
     facilityId: DataTypes.INTEGER,
     division: DataTypes.STRING,
-    deletedAt: DataTypes.DATE
+    deletedAt: DataTypes.DATE,
+    lastGameAt: DataTypes.DATE
   }, {
     classMethods: {
       associate: function(models) {

@@ -105,6 +105,7 @@ db.upsertGame = async((gameData) => {
       lastBatchAt: gameData.batchAt
     }))
   }
+  await(db.Team.update({lastGameAt: gameData.gameDateTime}, {where: {id: [homeTeamId, awayTeamId], lastGameAt: {$or: {$eq: null, $lt: gameData.gameDateTime.format()}}}}))
   return game
 })
 
