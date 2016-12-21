@@ -126,6 +126,18 @@ select "name", "teamStats"."teamId", "goalsFor", "goalsAgainst", "gamesPlayed", 
     }
   },
 
+  ':facility/games': {
+    get: (req, res, next) => {
+      const cursor = new Cursor(req, res, Models.Game, ['gameDateTime', 'fieldId'], {
+        where: {
+          facilityId: req.params.facility
+        },
+        include: gameIncludes
+      })
+      cursor.sendPage().catch(next)
+    }
+  },
+
   ':facility/games/today': {
     get: (req, res, next) => {
       const cursor = new Cursor(req, res, Models.Game, ['gameDateTime', 'fieldId'], {
