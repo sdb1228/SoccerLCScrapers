@@ -43,7 +43,7 @@ module.exports = () => ({
       sequelize.query(` \
 select division as name, count(*) as "teamCount" \
 from "Teams" \
-where division is not null \
+where division is not null and "Teams"."facilityId"=${req.params.facility} \
 group by division \
 order by division \
 `, {type: sequelize.QueryTypes.SELECT}).then(divisions => res.ok(divisions)).catch(next)
