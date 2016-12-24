@@ -1,5 +1,5 @@
 let Scraper = require('./Scraper')
-let s = new Scraper('UYSABoys', {rateLimit: [10, 'second']})
+let s = new Scraper('UYSAGirls', {rateLimit: [10, 'second']})
 
 const Url = require('url')
 const moment = require('moment-timezone')
@@ -7,9 +7,9 @@ moment.tz.setDefault('America/Denver')
 
 const divisionPattern = 'uysa.affinitysoccer.com/tour/public/info/accepted_list.asp(*)'
 const teamPattern = 'uysa.affinitysoccer.com/tour/public/info/schedule_results2.asp(*)'
-const DIVISIONS_URL = 'http://uysa.affinitysoccer.com/tour/public/info/accepted_list.asp?sessionguid=&tournamentguid=C9582337-891D-4B73-B373-3A7340322AE6&show=boys'
+const DIVISIONS_URL = 'http://uysa.affinitysoccer.com/tour/public/info/accepted_list.asp?sessionguid=&tournamentguid=C9582337-891D-4B73-B373-3A7340322AE6&show=girls'
 const DIVISION_URL_PREFIX = 'schedule_results2.asp?'
-const FACILITY_ID = 4
+const FACILITY_ID = 5
 
 s.domExtractor(divisionPattern, function extractDivisions(req, res) {
   const $ = req.$
