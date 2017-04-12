@@ -7,7 +7,7 @@ moment.tz.setDefault('America/Denver')
 
 const divisionPattern = 'uysa.affinitysoccer.com/tour/public/info/accepted_list.asp(*)'
 const teamPattern = 'uysa.affinitysoccer.com/tour/public/info/schedule_results2.asp(*)'
-const DIVISIONS_URL = 'http://uysa.affinitysoccer.com/tour/public/info/accepted_list.asp?sessionguid=&tournamentguid=C9582337-891D-4B73-B373-3A7340322AE6&show=girls'
+const DIVISIONS_URL = 'http://uysa.affinitysoccer.com/tour/public/info/accepted_list.asp?sessionguid=&tournamentguid=91C70238-454B-4885-AABB-12B8B1CAEABB&show=girls'
 const DIVISION_URL_PREFIX = 'schedule_results2.asp?'
 const FACILITY_ID = 5
 
