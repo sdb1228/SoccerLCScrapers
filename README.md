@@ -1,5 +1,5 @@
 # SoccerLCScrapers
-
+   
 Soccer LC Scrapers contains all the scrapers for the facilities supported currently on the SoccerLC app.
 
 ## Getting Started
