@@ -9,7 +9,7 @@ const divisionPattern = 'uysa.affinitysoccer.com/tour/public/info/accepted_list.
 const teamPattern = 'uysa.affinitysoccer.com/tour/public/info/schedule_results2.asp(*)'
 const DIVISIONS_URL = 'http://uysa.affinitysoccer.com/tour/public/info/accepted_list.asp?sessionguid=&tournamentguid=91C70238-454B-4885-AABB-12B8B1CAEABB&show=girls'
 const DIVISION_URL_PREFIX = 'schedule_results2.asp?'
-const FACILITY_ID = 53
+const FACILITY_ID = 5
 
 s.domExtractor(divisionPattern, function extractDivisions(req, res) {
   const $ = req.$
